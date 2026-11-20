@@ -76,9 +76,24 @@ button,select,input,textarea{font:inherit;color:inherit}
   .top select{max-width:105px}
   #frame{width:100%;border-width:0;border-radius:0}
 }
+
+/* Supabase login + cloud status */
+#authGate{position:fixed;inset:0;z-index:9999;background:rgba(5,8,12,.96);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto}
+#authGate.show{display:flex}
+.authCard{width:min(100%,430px);background:#10151c;border:1px solid #263342;border-radius:18px;padding:26px;box-shadow:0 24px 90px #0009}
+.authCard h2{font-size:24px;margin-bottom:8px;color:#00ff88}
+.authCard p{font-size:13px;color:#9aa7b6;line-height:1.5;margin-bottom:18px}
+.authField{display:flex;flex-direction:column;gap:6px;margin:12px 0;color:#aeb8c5;font-size:13px}
+.authField input{width:100%;background:#090c11;border:1px solid #293443;border-radius:9px;padding:12px;color:#fff}
+.authActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
+#authMsg{font-size:13px;min-height:20px;margin-top:14px;color:#00ff88;overflow-wrap:anywhere}
+#cloudStatus{font-size:11px;color:#9aa7b6;white-space:nowrap}
+@media(max-width:600px){#cloudStatus{display:none}.authCard{padding:20px}}
+
 </style>
 </head>
 <body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <div class="top">
   <span class="logo">WEBHUB<small>PRO</small></span>
@@ -89,8 +104,24 @@ button,select,input,textarea{font:inherit;color:inherit}
   <button class="b" id="bUndo" title="Deshacer (Ctrl+Z)">↶</button>
   <button class="b" id="bRedo" title="Rehacer (Ctrl+Y)">↷</button>
   <span class="sp"></span>
+  <span id="cloudStatus">Sin conectar</span>
+  <button class="b" id="bSignOut" style="display:none">Salir</button>
   <button class="b mob" id="bView">Ver / Editar</button>
   <button class="b pri" id="bExport">Descargar web</button>
+</div>
+
+<div id="authGate" class="show">
+  <div class="authCard">
+    <h2>WEBHUB PRO</h2>
+    <p>Ingresá con tu cuenta para guardar tu sitio en la nube y recuperarlo desde cualquier dispositivo.</p>
+    <label class="authField">Email<input id="authEmail" type="email" autocomplete="email" placeholder="tu@email.com"></label>
+    <label class="authField">Contraseña<input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres"></label>
+    <div class="authActions">
+      <button class="b pri" id="bLogin">Iniciar sesión</button>
+      <button class="b" id="bSignup">Crear cuenta</button>
+    </div>
+    <div id="authMsg">Conectando con Supabase…</div>
+  </div>
 </div>
 
 <div class="main">
@@ -343,6 +374,15 @@ footer{padding:30px 0;text-align:center;font-size:13px}
 }
 
 /* ================= ALMACENAMIENTO ================= */
+const SUPABASE_URL = "https://xlmcfasawbsrblwtxrgb.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_ywKS0a9KCBfEjFjErpJwpA_I6kLVSjZ";
+let supabaseClient = null;
+let cloudUser = null;
+let cloudStoreId = null;
+let cloudReady = false;
+let cloudSaveTimer = null;
+let cloudBusy = false;
+let cloudLoadingUserId = null;
 let DB={cur:null,list:{}};
 const uid=()=>Math.random().toString(36).slice(2,8);
 function loadDB(){
@@ -357,7 +397,137 @@ function loadDB(){
   if(!DB.cur||!DB.list[DB.cur]){const ks=Object.keys(DB.list);if(ks.length)DB.cur=ks[0];else{const id=uid();DB={cur:id,list:{[id]:newSite("Cliente 1")}};}}
 }
 let warned=false;
-function saveDB(){try{localStorage.setItem("webhub_v2",JSON.stringify(DB));}catch(e){if(!warned){warned=true;alert("Se llenó la memoria del navegador (imágenes pesadas). Descargá el proyecto con 'Guardar proyecto' para no perderlo.");}}}
+function saveDB(){
+  try{localStorage.setItem("webhub_v2",JSON.stringify(DB));}
+  catch(e){if(!warned){warned=true;alert("Se llenó la memoria del navegador (imágenes pesadas). Descargá el proyecto con 'Guardar proyecto' para no perderlo.");}}
+  scheduleCloudSave();
+}
+function setCloudStatus(message,isError=false){
+  const el=document.getElementById("cloudStatus");if(el){el.textContent=message;el.style.color=isError?"#ff7b88":"#00ff88";}
+}
+function setAuthMessage(message,isError=false){
+  const el=document.getElementById("authMsg");if(el){el.textContent=message;el.style.color=isError?"#ff7b88":"#00ff88";}
+}
+function showAuth(show){document.getElementById("authGate")?.classList.toggle("show",show);}
+function scheduleCloudSave(){
+  if(!cloudReady||!supabaseClient||!cloudStoreId||!cloudUser)return;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer=setTimeout(saveCloudConfig,900);
+}
+async function uploadCloudImage(dataUrl,objectPath){
+  if(typeof dataUrl!=="string"||!dataUrl.startsWith("data:image/"))return dataUrl;
+  const response=await fetch(dataUrl);
+  const blob=await response.blob();
+  const ext=blob.type.includes("png")?"png":blob.type.includes("webp")?"webp":"jpg";
+  const path=objectPath+"."+ext;
+  const {error}=await supabaseClient.storage.from("wb-store-assets").upload(path,blob,{upsert:true,contentType:blob.type||"image/jpeg",cacheControl:"3600"});
+  if(error)throw error;
+  return supabaseClient.storage.from("wb-store-assets").getPublicUrl(path).data.publicUrl;
+}
+async function prepareCloudConfig(config){
+  const copy=JSON.parse(JSON.stringify(config));
+  if(copy.logo)copy.logo=await uploadCloudImage(copy.logo,cloudStoreId+"/logo/main");
+  if(copy.hero)copy.hero=await uploadCloudImage(copy.hero,cloudStoreId+"/hero/main");
+  if(Array.isArray(copy.productos)){
+    for(let i=0;i<copy.productos.length;i++)if(copy.productos[i]?.img)copy.productos[i].img=await uploadCloudImage(copy.productos[i].img,cloudStoreId+"/products/product-"+i);
+  }
+  if(Array.isArray(copy.gallery)){
+    for(let i=0;i<copy.gallery.length;i++)if(copy.gallery[i])copy.gallery[i]=await uploadCloudImage(copy.gallery[i],cloudStoreId+"/gallery/image-"+i);
+  }
+  return copy;
+}
+async function saveCloudConfig(){
+  if(!cloudReady||!supabaseClient||!cloudStoreId||!cloudUser||cloudBusy)return;
+  const current=S();if(!current)return;
+  cloudBusy=true;setCloudStatus("Guardando…");
+  let snapshot;
+  try{snapshot=await prepareCloudConfig(JSON.parse(JSON.stringify(current)));}
+  catch(uploadError){cloudBusy=false;setCloudStatus("Error al subir imágenes",true);console.error("WebHub image upload:",uploadError);return;}
+  const {error}=await supabaseClient.from("wb_site_configs").upsert({
+    store_id:cloudStoreId,config:snapshot,version:1,updated_at:new Date().toISOString()
+  },{onConflict:"store_id"});
+  cloudBusy=false;
+  if(error){setCloudStatus("Error al guardar",true);console.error("WebHub cloud save:",error);return;}
+  setCloudStatus("Guardado en la nube");
+  // If edits happened while the request was running, queue another save.
+  if(JSON.stringify(S())!==JSON.stringify(snapshot))scheduleCloudSave();
+}
+async function loadOrCreateCloudStore(user){
+  setCloudStatus("Cargando tienda…");
+  const {data:members,error:memberError}=await supabaseClient.from("wb_store_members").select("store_id").eq("user_id",user.id);
+  if(memberError)throw memberError;
+  let store=null;
+  if(members?.length){
+    const ids=members.map(x=>x.store_id);
+    const {data:stores,error:storeError}=await supabaseClient.from("wb_stores").select("id,name,slug,status").in("id",ids).order("created_at",{ascending:true});
+    if(storeError)throw storeError;
+    store=stores?.[0]||null;
+  }
+  if(!store){
+    const base=(S()?.name||"Mi negocio").trim();
+    const safeSlug=base.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,42)||"mi-negocio";
+    const uniqueSlug=safeSlug+"-"+Math.random().toString(36).slice(2,7);
+    const {data:newId,error:createError}=await supabaseClient.rpc("wb_create_store",{p_name:base,p_slug:uniqueSlug});
+    if(createError)throw createError;
+    store={id:newId,name:base,slug:uniqueSlug,status:"draft"};
+  }
+  cloudStoreId=store.id;
+  const {data:cfg,error:configError}=await supabaseClient.from("wb_site_configs").select("config,version").eq("store_id",store.id).maybeSingle();
+  if(configError)throw configError;
+  const remote=cfg?.config;
+  if(remote&&typeof remote==="object"&&!Array.isArray(remote)&&Object.keys(remote).length){
+    DB.list[store.id]=normalize(remote);
+  }else{
+    // First cloud save: migrate the current local editor project without deleting local backups.
+    DB.list[store.id]=normalize(S());
+  }
+  DB.cur=store.id;
+  cloudReady=true;
+  renderProj();renderPanel();renderPrev();
+  if(!remote||!Object.keys(remote||{}).length)await saveCloudConfig();
+  else setCloudStatus("Conectado · "+store.name);
+  return store;
+}
+async function finishCloudLogin(session){
+  if(!session?.user)return;
+  const userId=session.user.id;
+  if(cloudReady&&cloudUser?.id===userId)return;
+  if(cloudLoadingUserId===userId)return;
+  cloudLoadingUserId=userId;
+  cloudUser=session.user;
+  document.getElementById("bSignOut").style.display="inline-block";
+  showAuth(false);
+  try{await loadOrCreateCloudStore(session.user);}
+  catch(err){cloudReady=false;showAuth(true);setAuthMessage("No se pudo cargar la tienda: "+(err.message||err),true);setCloudStatus("Error de conexión",true);}
+  finally{cloudLoadingUserId=null;}
+}
+async function initCloudAuth(){
+  if(!window.supabase?.createClient){setAuthMessage("No se pudo cargar la librería de Supabase. Revisá tu conexión a internet.",true);return;}
+  supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  const {data,error}=await supabaseClient.auth.getSession();
+  if(error){setAuthMessage(error.message,true);return;}
+  if(data.session)await finishCloudLogin(data.session);
+  else{showAuth(true);setAuthMessage("Iniciá sesión o creá tu cuenta para continuar.");setCloudStatus("Sin iniciar sesión");}
+  supabaseClient.auth.onAuthStateChange((event,session)=>{
+    if(event==="SIGNED_IN"&&session){setTimeout(()=>finishCloudLogin(session),0);}
+    if(event==="SIGNED_OUT"){cloudReady=false;cloudUser=null;cloudStoreId=null;document.getElementById("bSignOut").style.display="none";showAuth(true);setCloudStatus("Sesión cerrada");setAuthMessage("Iniciá sesión o creá tu cuenta para continuar.");}
+  });
+}
+async function authAction(mode){
+  if(!supabaseClient){setAuthMessage("Supabase todavía está cargando.",true);return;}
+  const email=document.getElementById("authEmail").value.trim();
+  const password=document.getElementById("authPassword").value;
+  if(!email||!password){setAuthMessage("Ingresá email y contraseña.",true);return;}
+  if(password.length<6){setAuthMessage("La contraseña debe tener al menos 6 caracteres.",true);return;}
+  setAuthMessage(mode==="signup"?"Creando cuenta…":"Iniciando sesión…");
+  const result=mode==="signup"
+    ?await supabaseClient.auth.signUp({email,password})
+    :await supabaseClient.auth.signInWithPassword({email,password});
+  if(result.error){setAuthMessage(result.error.message,true);return;}
+  if(mode==="signup"&&!result.data.session){setAuthMessage("Cuenta creada. Revisá tu email y confirmá la dirección; después volvé e iniciá sesión.");return;}
+  if(result.data.session)await finishCloudLogin(result.data.session);
+}
+
 const S=()=>DB.list[DB.cur];
 </script>
 <script>
@@ -571,6 +741,11 @@ function setDev(v){const w=$("pwrap"),fr=$("frame");if(v==="full"){w.classList.a
 $("bView").onclick=()=>document.body.classList.toggle("show-prev");
 
 loadDB();histInit();renderTabs();renderPanel();renderProj();renderPrev();setDev("390");
+$("bLogin").onclick=()=>authAction("login");
+$("bSignup").onclick=()=>authAction("signup");
+$("bSignOut").onclick=async()=>{if(supabaseClient)await supabaseClient.auth.signOut();};
+$("authPassword").addEventListener("keydown",e=>{if(e.key==="Enter")authAction("login");});
+initCloudAuth();
 </script>
 </body>
 </html>
