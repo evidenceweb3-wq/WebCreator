@@ -846,5 +846,150 @@ $("bSignOut").onclick=async()=>{if(supabaseClient)await supabaseClient.auth.sign
 $("authPassword").addEventListener("keydown",e=>{if(e.key==="Enter")authAction("login");});
 initCloudAuth();
 </script>
+
+  <!-- WEBHUB PRO · EPIC PACK
+     Pegá TODO este bloque en tu webhub.html justo ANTES de </body> (después del último </script>). -->
+<script>
+try{
+/* ============ EPIC PACK: paletas, fuentes, looks, rubros, efectos ============ */
+(function(){
+/* ---- 1. Paletas high-end ---- */
+Object.assign(PRESETS,{
+  oro:{bg:"#0a0806",tx:"#f4ecd8",ac:"#d4af37",ac2:"#f5e1a4",card:"#15110a"},
+  marfil:{bg:"#f7f2e9",tx:"#1b1710",ac:"#9a7b2f",ac2:"#c9a961",card:"#fffdf8"},
+  obsidiana:{bg:"#050506",tx:"#f1f1f3",ac:"#e8e8ec",ac2:"#8c8c99",card:"#0f0f12"},
+  esmeralda:{bg:"#04120e",tx:"#e8f5ee",ac:"#2ee6a6",ac2:"#d4af37",card:"#0a1f19"},
+  borgona:{bg:"#14060b",tx:"#f8ecee",ac:"#c9304d",ac2:"#e8b27a",card:"#220b13"},
+  champagne:{bg:"#f6ece0",tx:"#2a1f17",ac:"#b8860b",ac2:"#e6c78f",card:"#fffaf2"},
+  titanio:{bg:"#0c0f14",tx:"#e9edf2",ac:"#9fb4c9",ac2:"#e6eef7",card:"#151a22"},
+  aurora:{bg:"#070816",tx:"#eef0ff",ac:"#7c5cff",ac2:"#00e0c6",card:"#10122a"},
+  rosegold:{bg:"#fbf0ee",tx:"#2a1a1c",ac:"#b76e79",ac2:"#e8b4a0",card:"#fffaf9"},
+  medianoche:{bg:"#020617",tx:"#e2e8f0",ac:"#38bdf8",ac2:"#a78bfa",card:"#0b1226"},
+  sunset:{bg:"#150a1c",tx:"#fff1ec",ac:"#ff6a3d",ac2:"#ff3d9a",card:"#221230"},
+  bosque:{bg:"#0b1510",tx:"#ecf3ea",ac:"#c8a15a",ac2:"#7fb069",card:"#13221a"}
+});
+
+/* ---- 2. Tipografías ---- */
+Object.assign(FONTS,{
+  lujo:{n:"Lujo (Didot)",h:"Didot,'Bodoni MT','Playfair Display','Hoefler Text',Georgia,serif",b:"'Avenir Next',Avenir,'Segoe UI',system-ui,sans-serif",w:500},
+  atelier:{n:"Atelier (Optima)",h:"Optima,Candara,'Segoe UI',sans-serif",b:"Optima,Candara,'Segoe UI',sans-serif",w:600},
+  brutal:{n:"Brutal (Black)",h:"'Arial Black','Helvetica Neue',Arial,sans-serif",b:"system-ui,-apple-system,sans-serif",w:900,up:1}
+});
+
+/* ---- 3. Looks épicos (solo estilo, no tocan tus textos) ---- */
+window.LOOKS={
+  blackgold:{n:"Black & Gold",d:"Lujo oscuro, filo dorado",colors:PRESETS.oro,font:"lujo",radius:"recto",btnStyle:"lujo",cardStyle:"lujo",fx:"spotlight",grain:true,titleGrad:true,divider:true,hover:true,spacing:"amplio",upper:true,ls:4,grad:true,tilt:true,cursor:true,shimmer:true,progress:true},
+  ivory:{n:"Ivory Atelier",d:"Marfil, serif, calma",colors:PRESETS.marfil,font:"lujo",radius:"suave",btnStyle:"outline",cardStyle:"flat",fx:"none",grain:true,titleGrad:false,divider:true,hover:true,spacing:"amplio",upper:false,ls:0,grad:false},
+  aurora:{n:"Aurora Tech",d:"Vidrio y luz en movimiento",colors:PRESETS.aurora,font:"geometrica",radius:"redondo",btnStyle:"glow",cardStyle:"glass",fx:"aurora",grain:false,titleGrad:true,divider:false,hover:true,tilt:true,cursor:true,progress:true,spacing:"amplio",upper:false,ls:0,grad:true},
+  cyber:{n:"Neon Grid",d:"Cuadrícula y neón",colors:PRESETS.neon,font:"mono",radius:"recto",btnStyle:"glow",cardStyle:"neon",fx:"grid",grain:false,titleGrad:false,divider:false,hover:true,cursor:true,progress:true,spacing:"normal",upper:true,ls:2,grad:true},
+  noir:{n:"Noir Cinema",d:"Negro puro, tipografía grande",colors:PRESETS.obsidiana,font:"condensada",radius:"recto",btnStyle:"solid",cardStyle:"border",fx:"spotlight",grain:true,titleGrad:false,divider:true,hover:true,spacing:"amplio",upper:true,ls:3,grad:false,heroH:"pantalla"},
+  emerald:{n:"Emerald Royal",d:"Esmeralda con oro",colors:PRESETS.esmeralda,font:"elegante",radius:"suave",btnStyle:"lujo",cardStyle:"lujo",fx:"aurora",grain:true,titleGrad:true,divider:true,hover:true,spacing:"amplio",upper:false,ls:1,grad:true},
+  couture:{n:"Rose Couture",d:"Rosé dorado, suave y fino",colors:PRESETS.rosegold,font:"lujo",radius:"redondo",btnStyle:"soft",cardStyle:"shadow",fx:"none",grain:true,titleGrad:false,divider:false,hover:true,spacing:"amplio",upper:false,ls:0,grad:true},
+  stars:{n:"Obsidian Stars",d:"Negro, estrellas y brillo",colors:PRESETS.obsidiana,font:"lujo",radius:"suave",btnStyle:"lujo",cardStyle:"lujo",fx:"stars",grain:true,titleGrad:true,shimmer:true,progress:true,tilt:true,divider:true,hover:true,spacing:"amplio",upper:true,ls:5,grad:true},
+  burgundy:{n:"Royal Burgundy",d:"Borgoña y oro, imponente",colors:PRESETS.borgona,font:"lujo",radius:"recto",btnStyle:"lujo",cardStyle:"lujo",fx:"spotlight",grain:true,titleGrad:true,shimmer:true,progress:true,cursor:true,divider:true,hover:true,spacing:"amplio",upper:false,ls:2,grad:true},
+  vapor:{n:"Sunset Vapor",d:"Atardecer, vidrio, brillo",colors:PRESETS.sunset,font:"suave",radius:"redondo",btnStyle:"glow",cardStyle:"glass",fx:"aurora",grain:false,titleGrad:true,divider:false,hover:true,spacing:"normal",upper:false,ls:0,grad:true}
+};
+
+/* ---- 4. Rubros nuevos ---- */
+const P=(n,p,d,b="")=>({n,p,old:"",badge:b,d,img:"",link:""});
+Object.assign(TEMPLATES,{
+  joyeria:{n:"💎 Joyería",layout:"editorial",colors:PRESETS.oro,font:"lujo",radius:"recto",btnStyle:"lujo",cardStyle:"lujo",fx:"spotlight",grain:true,titleGrad:true,grad:true,upper:true,ls:4,kicker:"Alta joyería",tagline:"Piezas que cuentan tu historia",cta:"Consultar por WhatsApp",prodT:"Colección",aboutT:"El taller",about:"Diseñamos y fabricamos cada pieza a mano, en oro y plata, con garantía de por vida.",productos:[P("Anillo Solitario","$480.000","Oro 18k, circón","Exclusivo"),P("Collar Luna","$210.000","Plata 925 bañada en oro"),P("Aros Aurora","$140.000","Oro blanco 18k"),P("Pulsera Eterna","$320.000","Eslabones artesanales")]},
+  barberia:{n:"💈 Barbería",layout:"landing",colors:PRESETS.bosque,font:"condensada",radius:"recto",btnStyle:"solid",cardStyle:"border",fx:"grain",grain:true,upper:true,ls:3,kicker:"Desde 2015",tagline:"Corte clásico, barba impecable",cta:"Reservar turno",prodT:"Servicios",aboutT:"La barbería",about:"Un espacio de barrio con atención de primera. Toalla caliente, navaja y buen mate.",points:["Turnos online","Productos premium","Barberos con experiencia"],productos:[P("Corte clásico","$9.000","Con lavado y peinado"),P("Barba + toalla","$7.000","Perfilado a navaja","Popular"),P("Combo completo","$14.000","Corte y barba")],sections:{pts:true,cta:true}},
+  fitness:{n:"🏋 Fitness",layout:"landing",colors:PRESETS.neon,font:"brutal",radius:"suave",btnStyle:"glow",cardStyle:"neon",fx:"grid",grad:true,upper:true,ls:1,kicker:"Entrená distinto",tagline:"Resultados reales, sin vueltas",cta:"Clase de prueba gratis",prodT:"Planes",aboutT:"Quiénes somos",about:"Entrenadores certificados, grupos reducidos y un plan armado para vos.",points:["Clase de prueba","Grupos reducidos","Plan personalizado"],productos:[P("Pase libre","$28.000","Todos los días"),P("3 veces x semana","$22.000","Horario a elección","Popular"),P("Personalizado","$45.000","Con entrenador")],sections:{pts:true,cta:true,faq:true}},
+  tech:{n:"🚀 Tech / SaaS",layout:"landing",colors:PRESETS.aurora,font:"geometrica",radius:"redondo",btnStyle:"glow",cardStyle:"glass",fx:"aurora",titleGrad:true,grad:true,kicker:"Nuevo",tagline:"Automatizá tu negocio en minutos",cta:"Probar gratis",prodT:"Planes",aboutT:"Por qué nosotros",about:"Software simple, rápido y pensado para equipos chicos que quieren crecer.",points:["Sin instalación","Soporte en español","Cancelás cuando quieras"],productos:[P("Starter","Gratis","Para empezar"),P("Pro","$15 / mes","Todo lo que necesitás","Popular"),P("Equipo","$49 / mes","Usuarios ilimitados")],sections:{pts:true,cta:true,faq:true,test:true}},
+  inmo:{n:"🏡 Inmobiliaria",layout:"catalogo",colors:PRESETS.titanio,font:"lujo",radius:"suave",btnStyle:"outline",cardStyle:"shadow",fx:"spotlight",grain:true,kicker:"Propiedades seleccionadas",tagline:"Encontrá el lugar donde querés vivir",cta:"Coordinar visita",prodT:"Propiedades",aboutT:"La inmobiliaria",about:"Acompañamos cada operación de principio a fin, con asesoramiento legal y tasaciones sin cargo.",productos:[P("Casa con jardín","USD 185.000","3 dorm · 2 baños · cochera","Nueva"),P("Departamento centro","USD 98.000","2 dorm · balcón"),P("Lote en barrio cerrado","USD 52.000","600 m² · escritura inmediata")]}
+});
+
+/* ---- 5. Efectos en la web generada ---- */
+const GR='url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%22160%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E")';
+const FX={
+ stars:"#epstars{position:fixed;inset:0;z-index:-1;pointer-events:none}",
+ aurora:"body::before{content:'';position:fixed;inset:-25%;z-index:-1;pointer-events:none;background:radial-gradient(38% 38% at 18% 22%,color-mix(in srgb,var(--ac) 34%,transparent),transparent 70%),radial-gradient(34% 34% at 82% 28%,color-mix(in srgb,var(--ac2) 30%,transparent),transparent 70%),radial-gradient(40% 40% at 55% 85%,color-mix(in srgb,var(--ac) 20%,transparent),transparent 70%);filter:blur(30px);animation:aur 20s ease-in-out infinite alternate}@keyframes aur{to{transform:translate3d(4%,3%,0) scale(1.12)}}",
+ spotlight:"body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(900px 520px at 50% -8%,color-mix(in srgb,var(--ac) 24%,transparent),transparent 70%)}",
+ grid:"body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--ln) 1px,transparent 1px),linear-gradient(90deg,var(--ln) 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(ellipse at 50% 0,#000,transparent 75%);mask-image:radial-gradient(ellipse at 50% 0,#000,transparent 75%)}"
+};
+function epicCss(s){
+  let c="";
+  if(FX[s.fx]){c+=FX[s.fx]+'[style*="linear-gradient(160deg"]{background:transparent!important}';}
+  if(s.grain)c+="body::after{content:'';position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.07;background:"+GR+"}";
+  if(s.cardStyle==="lujo")c+=".card{border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ac) 35%,transparent),0 22px 54px rgba(0,0,0,.28)}";
+  if(s.cardStyle==="neon")c+=".card{border:1px solid var(--ac);box-shadow:0 0 0 1px color-mix(in srgb,var(--ac) 25%,transparent),0 0 30px color-mix(in srgb,var(--ac) 35%,transparent)}";
+  if(s.btnStyle==="lujo")c+=".btn:not(.gh):not([style]){background:linear-gradient(115deg,var(--ac),var(--ac2) 50%,var(--ac));background-size:220% 100%;color:var(--ink);border:1px solid color-mix(in srgb,#fff 35%,transparent);box-shadow:0 8px 26px color-mix(in srgb,var(--ac) 40%,transparent);transition:background-position .6s,transform .2s}.btn:not(.gh):not([style]):hover{background-position:100% 0}";
+  if(s.btnStyle==="glow")c+=".btn:not(.gh):not([style]){background:var(--acf);color:var(--ink);border:2px solid transparent;box-shadow:0 0 32px color-mix(in srgb,var(--ac) 55%,transparent)}";
+  c+=".btn.gh{box-shadow:none}";
+  if(s.titleGrad)c+=(s.hero?"":"h1,")+".sec-t{background:linear-gradient(120deg,var(--tx) 10%,var(--ac) 60%,var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}";
+  if(s.hover!==false)c+=".card{transition:transform .35s,box-shadow .35s,opacity .7s}.card:hover{transform:translateY(-6px)}.btn{transition:transform .2s,filter .2s}.btn:hover{transform:translateY(-2px);filter:brightness(1.1)}";
+  if(s.divider)c+="section+section{border-top:1px solid var(--ln)}.kick{letter-spacing:5px}";
+  if(s.shimmer)c+="h1,.sec-t{background:linear-gradient(110deg,var(--tx) 0%,var(--ac) 30%,var(--ac2) 50%,var(--ac) 70%,var(--tx) 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shm 7s linear infinite}@keyframes shm{to{background-position:-220% 0}}";
+  if(s.progress)c+="#epbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--acf);z-index:99;box-shadow:0 0 12px var(--ac)}";
+  if(s.cursor)c+="#epcur{position:fixed;left:50%;top:30%;width:460px;height:460px;margin:-230px 0 0 -230px;border-radius:50%;pointer-events:none;z-index:1;mix-blend-mode:screen;background:radial-gradient(circle,color-mix(in srgb,var(--ac) 24%,transparent),transparent 65%)}";
+  if(s.tilt)c+=".card{transition:transform .15s,box-shadow .35s,opacity .7s!important}";
+  return c;
+}
+const _bs=buildSite;
+function epicJs(s){
+  const j=[];
+  if(s.progress)j.push("var b=d.createElement('div');b.id='epbar';d.body.appendChild(b);addEventListener('scroll',function(){var h=d.documentElement.scrollHeight-innerHeight;b.style.width=(h>0?scrollY/h*100:0)+'%'});");
+  if(s.cursor)j.push("var c=d.createElement('div');c.id='epcur';d.body.appendChild(c);addEventListener('pointermove',function(e){c.style.left=e.clientX+'px';c.style.top=e.clientY+'px'});");
+  if(s.tilt)j.push("d.querySelectorAll('.card').forEach(function(k){k.addEventListener('pointermove',function(e){var r=k.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;k.style.transform='perspective(800px) rotateY('+x*10+'deg) rotateX('+(-y*10)+'deg) translateY(-4px)'});k.addEventListener('pointerleave',function(){k.style.transform=''})});");
+  if(s.fx==="stars")j.push("var cv=d.createElement('canvas');cv.id='epstars';d.body.appendChild(cv);var x=cv.getContext('2d'),W,H,P=[];function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}rs();addEventListener('resize',rs);for(var i=0;i<90;i++)P.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+.3,v:Math.random()*.25+.05,a:Math.random()*6});var col=getComputedStyle(d.documentElement).getPropertyValue('--ac')||'#fff';(function f(){x.clearRect(0,0,W,H);P.forEach(function(p){p.y-=p.v;p.a+=.02;if(p.y<0){p.y=H;p.x=Math.random()*W}x.globalAlpha=.35+.35*Math.sin(p.a);x.fillStyle=col;x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill()});requestAnimationFrame(f)})();");
+  return j.length?"<script>(function(){try{var d=document;"+j.join("")+"}catch(e){}})()<\/script>":"";
+}
+buildSite=function(s){
+  let h=_bs(s);
+  try{
+    h=h.replace("</head>",()=>"<style>"+epicCss(s)+"</style></head>");
+    const i=h.lastIndexOf("</body>");
+    if(i>-1)h=h.slice(0,i)+epicJs(s)+h.slice(i);
+  }catch(e){console.error("epic",e);}
+  return h;
+};
+
+/* ---- 6. Panel del editor: looks + atmósfera ---- */
+const _rp=renderPanel;
+renderPanel=function(){
+  _rp();
+  const s=S(),p=$("panel");if(!s||!p)return;
+  if(tab==="inicio"){
+    p.insertAdjacentHTML("afterbegin",`<div class="h">Looks épicos · un clic</div><div class="looks">${Object.entries(LOOKS).map(([k,l])=>`<button class="look" data-look="${k}" style="--a:${l.colors.ac}"><i></i><b>${l.n}</b><span>${l.d}</span></button>`).join("")}</div><p class="small">Aplica paleta, tipografía, formas y efectos. No toca tus textos ni fotos.</p>`);
+  }
+  if(tab==="diseno"){
+    const add=(k,o)=>{const el=p.querySelector(`[data-k="${k}"]`);if(!el)return;for(const [v,t] of Object.entries(o))el.insertAdjacentHTML("beforeend",`<option value="${v}">${t}</option>`);el.value=s[k];};
+    add("btnStyle",{lujo:"Lujo dorado",glow:"Resplandor"});
+    add("cardStyle",{lujo:"Lujo (filo dorado)",neon:"Neón"});
+    const h=[...p.querySelectorAll(".h")].find(x=>x.textContent==="Movimiento");
+    if(h)h.insertAdjacentHTML("beforebegin",`<div class="h">Atmósfera</div>${SEL("Fondo animado","fx",s.fx||"none",{none:"Ninguno",aurora:"Aurora",stars:"Estrellas flotantes",spotlight:"Foco de luz",grid:"Cuadrícula"})}${TOG("Grano de película (textura premium)","grain",!!s.grain)}${TOG("Títulos con degradé","titleGrad",!!s.titleGrad)}${TOG("Líneas finas entre secciones","divider",!!s.divider)}${TOG("Efecto al pasar el mouse","hover",s.hover!==false)}${TOG("Barra de progreso al scrollear","progress",!!s.progress)}${TOG("Luz que sigue al cursor","cursor",!!s.cursor)}${TOG("Tarjetas 3D (se inclinan)","tilt",!!s.tilt)}${TOG("Brillo animado en títulos","shimmer",!!s.shimmer)}`);
+  }
+};
+document.addEventListener("click",ev=>{
+  const t=ev.target.closest("[data-look]");if(!t)return;
+  const s=S(),l=JSON.parse(JSON.stringify(LOOKS[t.dataset.look]));delete l.n;delete l.d;
+  Object.assign(s,{progress:false,cursor:false,tilt:false,shimmer:false},l);s.colors={...l.colors};commit(true);
+});
+
+/* ---- 7. Look premium del propio editor ---- */
+const st=document.createElement("style");
+st.textContent=`body{background:radial-gradient(900px 500px at 70% -10%,#0b2a20 0,transparent 60%),var(--bg)}
+.top{background:linear-gradient(180deg,#141b25,#0e131a);box-shadow:0 8px 30px #0006}
+.logo{text-shadow:0 0 18px #00ff8866}
+.b{transition:transform .15s,border-color .2s,background .2s}.b:hover:not(:disabled){border-color:var(--ac);background:#1f2733}
+.b.pri{background:linear-gradient(135deg,#00ff88,#00d4ff);box-shadow:0 6px 22px #00ff8844}
+.tabs button.on{text-shadow:0 0 14px #00ff8888}
+.h{background:linear-gradient(90deg,var(--ac),#00c2ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.chip{transition:transform .2s,border-color .2s}.chip:hover{transform:scale(1.15);border-color:var(--ac)}
+.lay button,.prod{transition:border-color .2s,transform .2s}.lay button:hover{border-color:#2f6b52;transform:translateY(-2px)}
+.looks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.look{position:relative;text-align:left;background:#090c11;border:1px solid var(--ln);border-radius:12px;padding:13px;cursor:pointer;overflow:hidden;transition:transform .2s,border-color .2s}
+.look i{position:absolute;inset:0;background:radial-gradient(120% 90% at 100% 0,var(--a),transparent 60%);opacity:.3;transition:opacity .25s}
+.look:hover{transform:translateY(-2px);border-color:var(--a)}.look:hover i{opacity:.6}
+.look b{display:block;position:relative;font-size:14px}.look span{position:relative;font-size:11px;color:var(--mut)}
+#frame{box-shadow:0 30px 80px #000a;border-color:#2a3240}`;
+document.head.appendChild(st);
+
+renderPanel();renderPrev();
+})();
+}catch(e){var eb=document.createElement('div');eb.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#b00020;color:#fff;padding:8px;font:12px monospace';eb.textContent='Epic Pack error: '+e.message;document.body.appendChild(eb);}
+</script>
+  
 </body>
 </html>
