@@ -48,6 +48,25 @@ button,select,input,textarea{font:inherit;color:inherit}
 .chip{width:44px;height:44px;border-radius:50%;border:3px solid var(--ln);cursor:pointer;position:relative;overflow:hidden}
 .chip i{position:absolute;inset:0}
 .chip i+i{inset:auto 0 0 0;height:50%}
+/* NEW premium swatches */
+.swgroups{display:flex;flex-direction:column;gap:14px}
+.swgroup{display:flex;flex-direction:column;gap:8px}
+.swgroup .cat{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);font-weight:700}
+.swatches{display:flex;flex-wrap:wrap;gap:9px}
+.swatch{display:flex;flex-direction:column;gap:5px;cursor:pointer;align-items:center;width:58px}
+.swatch .cc{width:48px;height:48px;border-radius:13px;border:2px solid var(--ln);position:relative;overflow:hidden;transition:.15s;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.swatch .cc i{position:absolute;inset:0}
+.swatch .cc i+i{inset:auto 0 0 0;height:42%}
+.swatch .cc b{position:absolute;top:6px;left:8px;width:8px;height:8px;border-radius:50%;background:currentColor;opacity:0}
+.swatch:hover .cc{border-color:var(--ac);transform:translateY(-2px) scale(1.05)}
+.swatch small{font-size:10px;color:var(--mut);text-align:center;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:capitalize}
+/* style packs */
+.packs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pack{background:linear-gradient(160deg,#161c26,#0d131a);border:1.5px solid var(--ln);border-radius:14px;padding:14px;cursor:pointer;text-align:left;position:relative;overflow:hidden;transition:.18s}
+.pack:hover{border-color:var(--ac);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,255,136,.08)}
+.pack b{display:block;font-size:15px;margin-bottom:3px;color:var(--tx)}
+.pack span{display:block;font-size:11px;color:var(--mut);line-height:1.35}
+.pack .aa{position:absolute;right:-4px;top:-8px;font-size:52px;font-weight:900;color:var(--ac);opacity:.08;font-family:Georgia,serif;line-height:1}
 .tpl{display:flex;flex-wrap:wrap;gap:8px}
 .tog{display:flex;align-items:center;gap:10px;background:#090c11;border:1px solid var(--ln);border-radius:8px;padding:10px;font-size:14px;color:var(--tx);cursor:pointer}
 .tog input{width:18px;height:18px;accent-color:var(--ac)}
@@ -89,7 +108,6 @@ button,select,input,textarea{font:inherit;color:inherit}
 #authMsg{font-size:13px;min-height:20px;margin-top:14px;color:#00ff88;overflow-wrap:anywhere}
 #cloudStatus{font-size:11px;color:#9aa7b6;white-space:nowrap}
 @media(max-width:600px){#cloudStatus{display:none}.authCard{padding:20px}}
-
 </style>
 </head>
 <body>
@@ -150,19 +168,73 @@ button,select,input,textarea{font:inherit;color:inherit}
 <script>
 /* ================= DATOS BASE ================= */
 const PRESETS = {
-  neon:    {bg:"#07090d",tx:"#f2f5f7",ac:"#00ff88",ac2:"#00c2ff",card:"#10141b"},
-  claro:   {bg:"#fafaf7",tx:"#16181d",ac:"#1f6feb",ac2:"#8b5cf6",card:"#ffffff"},
-  tierra:  {bg:"#f3ece2",tx:"#2b2118",ac:"#b5532a",ac2:"#e0a458",card:"#fffaf2"},
-  rosa:    {bg:"#fff5f8",tx:"#2a1520",ac:"#ff3d8b",ac2:"#ff9a5c",card:"#ffffff"},
-  oceano:  {bg:"#0a1a2f",tx:"#eaf2ff",ac:"#ffc531",ac2:"#ff7a45",card:"#112642"},
-  amarillo:{bg:"#111111",tx:"#ffffff",ac:"#ffd400",ac2:"#ff8a00",card:"#1c1c1c"},
-  verde:   {bg:"#f1f7f1",tx:"#11261a",ac:"#1f9d55",ac2:"#8bd450",card:"#ffffff"},
-  violeta: {bg:"#0f0a1f",tx:"#f3eeff",ac:"#a66bff",ac2:"#ff6bd6",card:"#191030"},
-  coral:   {bg:"#fff7f2",tx:"#2b1a14",ac:"#ff5a3c",ac2:"#ff9a3c",card:"#ffffff"},
-  noche:   {bg:"#05070a",tx:"#e8ecf1",ac:"#4da3ff",ac2:"#7b5cff",card:"#0e131a"},
-  menta:   {bg:"#f0fbf8",tx:"#0e2a26",ac:"#12b5a0",ac2:"#4fd1c5",card:"#ffffff"},
-  vino:    {bg:"#1a0a10",tx:"#fbeff2",ac:"#e8445f",ac2:"#ff8a65",card:"#26121a"}
+  /* ALTA GAMA */
+  champagne:  {cat:"Alta gama", bg:"#faf6ef", tx:"#2b2117", ac:"#b8925a", ac2:"#d4b483", card:"#ffffff"},
+  noir:       {cat:"Alta gama", bg:"#0c0c0e", tx:"#f5f2e9", ac:"#c9a961", ac2:"#e8d5a3", card:"#16161a"},
+  bordeaux:   {cat:"Alta gama", bg:"#1a0d0f", tx:"#f7ecec", ac:"#b24747", ac2:"#d97a5a", card:"#2a1518"},
+  emerald:    {cat:"Alta gama", bg:"#f5faf7", tx:"#0e2a1f", ac:"#0e5c3f", ac2:"#7cb89a", card:"#ffffff"},
+  italian:    {cat:"Alta gama", bg:"#f8f4ec", tx:"#1c1814", ac:"#8b3a1f", ac2:"#c47a4a", card:"#fdfbf5"},
+  ivory:      {cat:"Alta gama", bg:"#fbf8f1", tx:"#231e18", ac:"#a88544", ac2:"#d4b878", card:"#ffffff"},
+  /* ROMÁNTICOS */
+  blush:      {cat:"Románticos", bg:"#fdf6f4", tx:"#3a2228", ac:"#c9808d", ac2:"#e6a8b3", card:"#ffffff"},
+  rosegold:   {cat:"Románticos", bg:"#fbf3f1", tx:"#2e1f1e", ac:"#b98a7e", ac2:"#e0b2a4", card:"#fffaf8"},
+  lavender:   {cat:"Románticos", bg:"#f7f4fb", tx:"#251b35", ac:"#7d5ba6", ac2:"#b197d1", card:"#ffffff"},
+  powder:     {cat:"Románticos", bg:"#f4f7fb", tx:"#1c2833", ac:"#5b7a99", ac2:"#9ab3cc", card:"#ffffff"},
+  peach:      {cat:"Románticos", bg:"#fef6f1", tx:"#2e1c14", ac:"#d47f5a", ac2:"#f0b89a", card:"#fffaf5"},
+  lilac:      {cat:"Románticos", bg:"#f8f4fb", tx:"#221833", ac:"#8a6db0", ac2:"#c0a4d8", card:"#ffffff"},
+  /* NATURALES */
+  sage:       {cat:"Naturales", bg:"#f3f5ef", tx:"#2a3325", ac:"#7d8a63", ac2:"#b8c4a0", card:"#ffffff"},
+  forest:     {cat:"Naturales", bg:"#0e1a14", tx:"#eaf2ec", ac:"#4a9d6e", ac2:"#8cc9a4", card:"#16261c"},
+  sand:       {cat:"Naturales", bg:"#f4ede1", tx:"#2a2118", ac:"#8b6f47", ac2:"#c4a780", card:"#fbf8f2"},
+  terracotta: {cat:"Naturales", bg:"#faf3ed", tx:"#2e1f18", ac:"#b5623a", ac2:"#d99772", card:"#ffffff"},
+  olive:      {cat:"Naturales", bg:"#f5f3e8", tx:"#2a2817", ac:"#6b7044", ac2:"#a8ad78", card:"#fdfcf3"},
+  stone:      {cat:"Naturales", bg:"#f3f1ec", tx:"#26221b", ac:"#7d7568", ac2:"#b5ad9e", card:"#ffffff"},
+  /* EDITORIALES */
+  cream:      {cat:"Editoriales", bg:"#faf8f2", tx:"#1a1815", ac:"#c8a86b", ac2:"#e6cfa0", card:"#ffffff"},
+  charcoal:   {cat:"Editoriales", bg:"#141414", tx:"#f2eee6", ac:"#c4a262", ac2:"#e0c894", card:"#1e1e1e"},
+  midnight:   {cat:"Editoriales", bg:"#0a0e1a", tx:"#e8ebf5", ac:"#7089ff", ac2:"#a8b8ff", card:"#12182a"},
+  ink:        {cat:"Editoriales", bg:"#f5f5f5", tx:"#0f0f0f", ac:"#1f4ee0", ac2:"#6688e8", card:"#ffffff"},
+  paper_rose: {cat:"Editoriales", bg:"#f6ece8", tx:"#2a1a1a", ac:"#a35c5c", ac2:"#d49a9a", card:"#fefaf8"},
+  /* VIBRANTES */
+  neon:       {cat:"Vibrantes", bg:"#07090d", tx:"#f2f5f7", ac:"#00ff88", ac2:"#00c2ff", card:"#10141b"},
+  noche:      {cat:"Vibrantes", bg:"#05070a", tx:"#e8ecf1", ac:"#4da3ff", ac2:"#7b5cff", card:"#0e131a"},
+  violeta:    {cat:"Vibrantes", bg:"#0f0a1f", tx:"#f3eeff", ac:"#a66bff", ac2:"#ff6bd6", card:"#191030"},
+  vino:       {cat:"Vibrantes", bg:"#1a0a10", tx:"#fbeff2", ac:"#e8445f", ac2:"#ff8a65", card:"#26121a"},
+  oceano:     {cat:"Vibrantes", bg:"#0a1a2f", tx:"#eaf2ff", ac:"#ffc531", ac2:"#ff7a45", card:"#112642"},
+  amarillo:   {cat:"Vibrantes", bg:"#111111", tx:"#ffffff", ac:"#ffd400", ac2:"#ff8a00", card:"#1c1c1c"},
+  /* CLÁSICOS */
+  claro:      {cat:"Clásicos", bg:"#fafaf7", tx:"#16181d", ac:"#1f6feb", ac2:"#8b5cf6", card:"#ffffff"},
+  verde:      {cat:"Clásicos", bg:"#f1f7f1", tx:"#11261a", ac:"#1f9d55", ac2:"#8bd450", card:"#ffffff"},
+  menta:      {cat:"Clásicos", bg:"#f0fbf8", tx:"#0e2a26", ac:"#12b5a0", ac2:"#4fd1c5", card:"#ffffff"},
+  tierra:     {cat:"Clásicos", bg:"#f3ece2", tx:"#2b2118", ac:"#b5532a", ac2:"#e0a458", card:"#fffaf2"},
+  rosa:       {cat:"Clásicos", bg:"#fff5f8", tx:"#2a1520", ac:"#ff3d8b", ac2:"#ff9a5c", card:"#ffffff"},
+  coral:      {cat:"Clásicos", bg:"#fff7f2", tx:"#2b1a14", ac:"#ff5a3c", ac2:"#ff9a3c", card:"#ffffff"}
 };
+
+/* High-end style packs: 1-click look */
+const STYLE_PACKS = {
+  hallmark: {n:"Hallmark", d:"Cálido, familiar, premium", colors:"champagne",
+    apply:{font:"romance", radius:"suave", spacing:"amplio", cardStyle:"flat", upper:false, headScale:110, ls:2, grad:false, btnStyle:"solid", animate:true}},
+  vogue:    {n:"Vogue",    d:"Editorial dramático",        colors:"noir",
+    apply:{font:"didone", radius:"recto", spacing:"amplio", cardStyle:"flat", upper:true, headScale:130, ls:5, grad:false, btnStyle:"outline", animate:true}},
+  atelier:  {n:"Atelier",  d:"Boutique minimalista",       colors:"sand",
+    apply:{font:"editorial", radius:"suave", spacing:"amplio", cardStyle:"border", upper:false, headScale:105, ls:1, grad:false, btnStyle:"solid", animate:true}},
+  romantic: {n:"Romantic", d:"Soft & floral",              colors:"blush",
+    apply:{font:"romance", radius:"redondo", spacing:"normal", cardStyle:"shadow", upper:false, headScale:115, ls:2, grad:false, btnStyle:"solid", animate:true}},
+  glamour:  {n:"Glamour",  d:"Noche & oro",                colors:"charcoal",
+    apply:{font:"didone", radius:"suave", spacing:"amplio", cardStyle:"glass", upper:true, headScale:120, ls:3, grad:true, btnStyle:"solid", animate:true}},
+  editorial:{n:"Editorial",d:"Revista moderna",            colors:"cream",
+    apply:{font:"editorial", radius:"recto", spacing:"amplio", cardStyle:"flat", upper:false, headScale:120, ls:0, grad:false, btnStyle:"solid", animate:true}},
+  aurora:   {n:"Aurora",   d:"Gradiente suave",            colors:"lavender",
+    apply:{font:"fraunces", radius:"suave", spacing:"normal", cardStyle:"glass", upper:false, headScale:110, ls:0, grad:true, btnStyle:"solid", animate:true}},
+  noir:     {n:"Noir",     d:"Oscuro de lujo",             colors:"midnight",
+    apply:{font:"lujo", radius:"suave", spacing:"amplio", cardStyle:"border", upper:true, headScale:115, ls:4, grad:false, btnStyle:"outline", animate:true}},
+  botanic:  {n:"Botanic",  d:"Natural y sereno",           colors:"sage",
+    apply:{font:"italiana", radius:"suave", spacing:"amplio", cardStyle:"border", upper:false, headScale:115, ls:1, grad:false, btnStyle:"solid", animate:true}},
+  festivo:  {n:"Festivo",  d:"Bold y luminoso",            colors:"oceano",
+    apply:{font:"arquitecta", radius:"suave", spacing:"normal", cardStyle:"shadow", upper:true, headScale:115, ls:2, grad:true, btnStyle:"solid", animate:true}}
+};
+
 const LAYOUTS = {
   catalogo:{n:"Catálogo",d:"Header, hero y grilla de productos. Ideal tienda."},
   landing:{n:"Landing",d:"Hero a pantalla completa, beneficios y carrusel."},
@@ -179,15 +251,25 @@ const LAYOUT_DEF = {
   carta:{heroAlign:"center",heroH:"medio",sections:{pts:false,cta:false}},
   portfolio:{heroAlign:"left",heroH:"medio",sections:{pts:false,cta:false,gal:true}}
 };
+/* Fonts: gf = Google Fonts id (loaded into the generated site) */
 const FONTS = {
-  moderna:{n:"Moderna",h:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif",b:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif",w:800},
-  elegante:{n:"Elegante (serif)",h:"Georgia,'Times New Roman',serif",b:"system-ui,-apple-system,sans-serif",w:700},
-  clasica:{n:"Clásica (Palatino)",h:"'Palatino Linotype','Book Antiqua',Palatino,serif",b:"'Palatino Linotype','Book Antiqua',Palatino,serif",w:700},
-  urbana:{n:"Urbana (Impact)",h:"Impact,'Arial Black',sans-serif",b:"system-ui,-apple-system,sans-serif",w:400,up:1},
-  condensada:{n:"Condensada",h:"'Arial Narrow','Roboto Condensed','Helvetica Neue',Arial,sans-serif",b:"system-ui,-apple-system,sans-serif",w:800,up:1},
-  geometrica:{n:"Geométrica",h:"'Century Gothic','Avenir Next',Avenir,Futura,'Trebuchet MS',sans-serif",b:"'Century Gothic','Avenir Next',Avenir,Futura,'Trebuchet MS',sans-serif",w:800},
-  mono:{n:"Mono",h:"ui-monospace,Menlo,Consolas,monospace",b:"ui-monospace,Menlo,Consolas,monospace",w:700},
-  suave:{n:"Suave",h:"'Trebuchet MS','Segoe UI',sans-serif",b:"'Trebuchet MS','Segoe UI',sans-serif",w:700}
+  moderna:    {n:"Moderna (Inter)",       h:"'Inter','SF Pro Display',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif", b:"'Inter',system-ui,-apple-system,sans-serif", w:800, gf:"Inter:wght@400;500;600;700;800;900"},
+  elegante:   {n:"Elegante (Playfair)",   h:"'Playfair Display',Georgia,'Times New Roman',serif", b:"'Inter',system-ui,sans-serif", w:700, gf:"Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Inter:wght@400;500;600"},
+  clasica:    {n:"Clásica (Palatino)",    h:"'Palatino Linotype','Book Antiqua',Palatino,serif", b:"'Palatino Linotype','Book Antiqua',Palatino,serif", w:700},
+  urbana:     {n:"Urbana (Bebas)",        h:"'Bebas Neue',Impact,'Arial Black',sans-serif", b:"'Inter',system-ui,sans-serif", w:400, up:1, gf:"Bebas+Neue&family=Inter:wght@400;500;600"},
+  condensada: {n:"Condensada (Oswald)",   h:"'Oswald','Arial Narrow',sans-serif", b:"'Inter',system-ui,sans-serif", w:700, up:1, gf:"Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600"},
+  geometrica: {n:"Geométrica (Montserrat)",h:"'Montserrat','Century Gothic','Avenir Next',sans-serif", b:"'Montserrat',sans-serif", w:800, gf:"Montserrat:wght@400;500;600;700;800;900"},
+  mono:       {n:"Mono (Space)",          h:"'Space Mono',ui-monospace,Menlo,Consolas,monospace", b:"'Space Mono',ui-monospace,monospace", w:700, gf:"Space+Mono:wght@400;700"},
+  suave:      {n:"Suave (Quicksand)",     h:"'Quicksand','Trebuchet MS',sans-serif", b:"'Quicksand','Trebuchet MS',sans-serif", w:700, gf:"Quicksand:wght@400;500;600;700"},
+  /* High-end additions */
+  didone:     {n:"Didone (Vogue)",        h:"'Playfair Display','Didot',Georgia,serif", b:"'Inter',system-ui,sans-serif", w:900, gf:"Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Inter:wght@400;500;600"},
+  lujo:       {n:"Lujo (Bodoni)",         h:"'Bodoni Moda',Georgia,serif", b:"'Inter',system-ui,sans-serif", w:700, gf:"Bodoni+Moda:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Inter:wght@400;500;600"},
+  romance:    {n:"Romántica (Cormorant)", h:"'Cormorant Garamond',Georgia,serif", b:"'Cormorant Garamond',Georgia,serif", w:500, gf:"Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400"},
+  editorial:  {n:"Editorial (Baskerville)",h:"'Libre Baskerville',Georgia,serif", b:"'Libre Baskerville',Georgia,serif", w:700, gf:"Libre+Baskerville:ital,wght@0,400;0,700;1,400"},
+  italiana:   {n:"Italiana (fina)",       h:"'Italiana',Georgia,serif", b:"'Inter',system-ui,sans-serif", w:400, gf:"Italiana&family=Inter:wght@400;500;600"},
+  script:     {n:"Manuscrita (Dancing)",  h:"'Dancing Script',cursive", b:"'Inter',system-ui,sans-serif", w:600, gf:"Dancing+Script:wght@400;500;600;700&family=Inter:wght@400;500;600"},
+  arquitecta: {n:"Arquitecta (Archivo)",  h:"'Archivo','Helvetica Neue',Arial,sans-serif", b:"'Archivo',system-ui,sans-serif", w:800, up:1, gf:"Archivo:wght@400;500;600;700;800;900"},
+  fraunces:   {n:"Fraunces (soft serif)", h:"'Fraunces',Georgia,serif", b:"'Inter',system-ui,sans-serif", w:800, gf:"Fraunces:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Inter:wght@400;500;600"}
 };
 const RADIUS = {recto:["0px","0px"],suave:["12px","10px"],redondo:["26px","999px"]};
 const SL = {pts:"Beneficios",prod:"Productos / servicios",about:"Quiénes somos",gal:"Galería",test:"Opiniones",faq:"Preguntas frecuentes",map:"Mapa",cta:"Banda de llamado a la acción",cont:"Contacto"};
@@ -233,7 +315,14 @@ const TEMPLATES = {
     productos:[{n:"Corte y peinado",p:"$12.000",old:"",badge:"",d:"Incluye lavado",img:"",link:""},{n:"Color completo",p:"$28.000",old:"",badge:"",d:"Con tratamiento",img:"",link:""},{n:"Manicuría",p:"$9.000",old:"",badge:"Popular",d:"Semipermanente",img:"",link:""},{n:"Limpieza facial",p:"$15.000",old:"",badge:"",d:"Profunda, 60 min",img:"",link:""}]},
   creativo:{n:"🎨 Creativo",layout:"portfolio",colors:PRESETS.noche,font:"geometrica",radius:"suave",cardStyle:"glass",grad:true,kicker:"Diseño & desarrollo",tagline:"Webs y piezas que se notan",cta:"Hablemos",prodT:"Trabajos",aboutT:"Sobre mí",about:"Diseño y desarrollo proyectos a medida para marcas y emprendedores. Rápido, prolijo y con criterio.",
     productos:[{n:"Identidad visual",p:"Desde $60.000",old:"",badge:"",d:"Logo, paleta y piezas base",img:"",link:""},{n:"Sitio web",p:"Desde $120.000",old:"",badge:"",d:"Diseño y desarrollo completo",img:"",link:""},{n:"Pack redes",p:"$40.000",old:"",badge:"Nuevo",d:"12 piezas para el mes",img:"",link:""}],
-    sections:{gal:true}}
+    sections:{gal:true}},
+  bodas:{n:"💍 Bodas / Eventos",layout:"landing",colors:PRESETS.champagne,font:"romance",radius:"suave",cardStyle:"flat",grad:false,heroAlign:"center",heroH:"pantalla",kicker:"Una historia para siempre",tagline:"Diseñamos momentos que se recuerdan toda la vida",cta:"Pedir información",prodT:"Servicios",aboutT:"Nuestra filosofía",about:"Cada evento es único. Trabajamos con detalle, elegancia y dedicación para crear experiencias inolvidables.",
+    points:["Asesoría personalizada","Diseño a medida","Coordinación el día del evento"],
+    productos:[{n:"Boda íntima",p:"Desde $350.000",old:"",badge:"",d:"Hasta 50 invitados",img:"",link:""},{n:"Boda clásica",p:"Desde $650.000",old:"",badge:"Popular",d:"Hasta 150 invitados",img:"",link:""},{n:"Evento corporativo",p:"A medida",old:"",badge:"",d:"Presupuesto personalizado",img:"",link:""}],
+    sections:{pts:true,cta:true,test:true,gal:true}},
+  joyeria:{n:"💎 Joyería / Lujo",layout:"portfolio",colors:PRESETS.noir,font:"lujo",radius:"recto",cardStyle:"flat",grad:false,kicker:"Alta joyería",tagline:"Piezas únicas, hechas a mano",cta:"Consultar disponibilidad",prodT:"Colección",aboutT:"El atelier",about:"Cada pieza está pensada y trabajada artesanalmente. Materiales nobles, diseño atemporal.",
+    productos:[{n:"Anillo solitario",p:"$280.000",old:"",badge:"Pieza única",d:"Oro 18k y diamante",img:"",link:""},{n:"Collar cadena",p:"$190.000",old:"",badge:"",d:"Oro 18k",img:"",link:""},{n:"Aros clásicos",p:"$145.000",old:"",badge:"",d:"Oro y perlas",img:"",link:""}],
+    sections:{gal:true,test:true}}
 };
 
 function merge(d,o){
@@ -259,6 +348,7 @@ function ink(hex){const n=parseInt(String(hex).slice(1),16)||0,r=n>>16&255,g=n>>
 
 function buildSite(s){
   const e=esc,c=s.colors,f=FONTS[s.font],[R,BR]=RADIUS[s.radius]||RADIUS.suave;
+  const gfLink=f.gf?`<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=${f.gf}&display=swap">`:"";
   const nl=t=>e(t).replace(/\n/g,"<br>");
   const num=(s.wa||"").replace(/\D/g,"");
   const wa=m=>"https://wa.me/"+num+(m?"?text="+encodeURIComponent(m):"");
@@ -370,7 +460,7 @@ footer{padding:30px 0;text-align:center;font-size:13px}
   const fab=(num&&s.fab.on)?`<a class="fab" href="${waMain}" target="_blank" rel="noopener">${e(s.fab.label||"WhatsApp")}</a>`:"";
   const anim=s.animate?`<script>(function(){if(!("IntersectionObserver" in window))return;var t=document.querySelectorAll("section .card,section h2,.rvx");t.forEach(function(x){x.classList.add("rv")});var o=new IntersectionObserver(function(en){en.forEach(function(i){if(i.isIntersecting){i.target.classList.add("in");o.unobserve(i.target)}})},{threshold:.1});t.forEach(function(x){o.observe(x)})})()<\/script>`:"";
   const fav=encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${s.emoji||"✨"}</text></svg>`);
-  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${e(s.seoT||s.name)}</title><meta name="description" content="${e(s.seoD||s.tagline)}"><meta name="theme-color" content="${e(c.bg)}"><meta property="og:title" content="${e(s.seoT||s.name)}"><meta property="og:description" content="${e(s.seoD||s.tagline)}"><meta property="og:type" content="website"><link rel="icon" href="data:image/svg+xml,${fav}"><style>${css}${s.css}</style></head><body class="${s.layout}">${ann}${top}${mid}${foot}${fab}${anim}${s.html}</body></html>`;
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${e(s.seoT||s.name)}</title><meta name="description" content="${e(s.seoD||s.tagline)}"><meta name="theme-color" content="${e(c.bg)}"><meta property="og:title" content="${e(s.seoT||s.name)}"><meta property="og:description" content="${e(s.seoD||s.tagline)}"><meta property="og:type" content="website"><link rel="icon" href="data:image/svg+xml,${fav}">${gfLink}<style>${css}${s.css}</style></head><body class="${s.layout}">${ann}${top}${mid}${foot}${fab}${anim}${s.html}</body></html>`;
 }
 
 /* ================= ALMACENAMIENTO ================= */
@@ -449,7 +539,6 @@ async function saveCloudConfig(){
   cloudBusy=false;
   if(error){setCloudStatus("Error al guardar",true);console.error("WebHub cloud save:",error);return;}
   setCloudStatus("Guardado en la nube");
-  // If edits happened while the request was running, queue another save.
   if(JSON.stringify(S())!==JSON.stringify(snapshot))scheduleCloudSave();
 }
 async function loadOrCreateCloudStore(user){
@@ -478,7 +567,6 @@ async function loadOrCreateCloudStore(user){
   if(remote&&typeof remote==="object"&&!Array.isArray(remote)&&Object.keys(remote).length){
     DB.list[store.id]=normalize(remote);
   }else{
-    // First cloud save: migrate the current local editor project without deleting local backups.
     DB.list[store.id]=normalize(S());
   }
   DB.cur=store.id;
@@ -549,11 +637,16 @@ function renderTabs(){$("tabs").innerHTML=Object.entries(TABS).map(([k,v])=>`<bu
 function renderPanel(){
   const s=S();let h="";
   if(tab==="inicio"){
-    h=`<div class="h">Arrancar por rubro</div><div class="tpl">${Object.entries(TEMPLATES).map(([k,t])=>`<button class="b" data-tpl="${k}">${t.n}</button>`).join("")}</div>
-<p class="small">Carga estructura, paleta, estilo y textos de ejemplo. Conserva nombre, contacto, logo y fotos.</p>
+    const groups={};
+    for(const [k,p] of Object.entries(PRESETS)){(groups[p.cat]=groups[p.cat]||[]).push([k,p]);}
+    h=`<div class="h">Style packs · Alta gama en un click</div>
+<div class="packs">${Object.entries(STYLE_PACKS).map(([k,v])=>`<button class="pack" data-style="${k}"><span class="aa">Aa</span><b>${v.n}</b><span>${v.d}</span></button>`).join("")}</div>
+<p class="small">Un click aplica paleta, tipografía, espaciado, bordes y estilo de botón. Después podés retocar todo.</p>
+<div class="h">Arrancar por rubro</div><div class="tpl">${Object.entries(TEMPLATES).map(([k,t])=>`<button class="b" data-tpl="${k}">${t.n}</button>`).join("")}</div>
 <div class="h">Estructura</div><div class="lay">${Object.entries(LAYOUTS).map(([k,v])=>`<button data-layout="${k}" class="${s.layout===k?"on":""}"><b>${v.n}</b><span>${v.d}</span></button>`).join("")}</div>
-<p class="small">Al cambiar la estructura se ajusta el hero y las secciones típicas. Después podés retocar todo.</p>
-<div class="h">Paleta rápida</div><div class="chips">${Object.entries(PRESETS).map(([k,p])=>`<div class="chip" data-preset="${k}" title="${k}"><i style="background:${p.bg}"></i><i style="background:${p.ac}"></i></div>`).join("")}</div>`;
+<p class="small">Al cambiar la estructura se ajusta el hero y las secciones típicas.</p>
+<div class="h">Paletas · ${Object.keys(PRESETS).length} combinaciones</div>
+<div class="swgroups">${Object.entries(groups).map(([cat,list])=>`<div class="swgroup"><div class="cat">${cat}</div><div class="swatches">${list.map(([k,p])=>`<div class="swatch" data-preset="${k}" title="${k}"><div class="cc"><i style="background:${p.bg}"></i><i style="background:${p.ac}"></i></div><small>${k}</small></div>`).join("")}</div></div>`).join("")}</div>`;
   }
   if(tab==="diseno"){
     h=`<div class="h">Colores</div>
@@ -561,7 +654,7 @@ function renderPanel(){
 <div class="row2">${F("Acento","colors.ac",s.colors.ac,"color")}${F("Acento 2","colors.ac2",s.colors.ac2,"color")}</div>
 ${TOG("Degradé en botones y detalles",`grad`,s.grad)}
 <div class="h">Tipografía</div>
-${SEL("Fuente","font",s.font,Object.fromEntries(Object.entries(FONTS).map(([k,v])=>[k,v.n])))}
+${SEL("Fuente",`font`,s.font,Object.fromEntries(Object.entries(FONTS).map(([k,v])=>[k,v.n])))}
 ${RNG("Tamaño de títulos","headScale",s.headScale,70,140,5,"%")}
 ${RNG("Espaciado de letras","ls",s.ls,-4,12,1)}
 ${TOG("Títulos en MAYÚSCULAS","upper",s.upper)}
@@ -672,9 +765,15 @@ document.addEventListener("input",ev=>{
 });
 
 document.addEventListener("click",ev=>{
-  const t=ev.target.closest("[data-tab],[data-layout],[data-preset],[data-tpl],[data-add],[data-rm],[data-mv],[data-mvs],[data-up],[data-upgal],[data-clr],[data-galrm],[data-reset],[data-dev]");
+  const t=ev.target.closest("[data-tab],[data-layout],[data-preset],[data-style],[data-tpl],[data-add],[data-rm],[data-mv],[data-mvs],[data-up],[data-upgal],[data-clr],[data-galrm],[data-reset],[data-dev]");
   if(!t||t.disabled)return;const s=S(),d=t.dataset;
   if(d.tab){tab=d.tab;renderTabs();renderPanel();}
+  else if(d.style){
+    const sp=STYLE_PACKS[d.style];if(!sp)return;
+    Object.assign(s,sp.apply);
+    if(sp.colors&&PRESETS[sp.colors])s.colors={...PRESETS[sp.colors]};
+    commit(true);
+  }
   else if(d.layout){s.layout=d.layout;applyLayoutDefaults(s,d.layout);commit(true);}
   else if(d.preset){s.colors={...PRESETS[d.preset]};commit(true);}
   else if(d.tpl){
