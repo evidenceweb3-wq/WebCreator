@@ -1029,5 +1029,100 @@ $("bSignOut").onclick=async()=>{if(supabaseClient)await supabaseClient.auth.sign
 $("authPassword").addEventListener("keydown",e=>{if(e.key==="Enter")authAction("login");});
 initCloudAuth();
 </script>
+  <script>
+/* ===== WEBHUB PRO · REVAMP DE UI (pegar antes del último </body>) ===== */
+(function(){
+if(typeof renderPanel!=="function"||typeof STYLES==="undefined"){document.write('<body style="font:16px system-ui;padding:30px"><h3>Este archivo no se abre solo</h3><p>Es un parche: pegalo antes del último &lt;/body&gt; de tu WebHub PRO.</p></body>');return;}
+try{
+const ACC={};
+const st=document.createElement("style");
+st.textContent=`.pane-edit{flex-direction:row!important}
+.tabs{flex-direction:column!important;width:70px;border-right:1px solid var(--ln);border-bottom:0!important;overflow-y:auto!important;padding:8px 5px!important;gap:3px;flex-shrink:0}
+.tabs button{flex-direction:column;gap:3px!important;padding:11px 2px!important;font-size:10px!important;border:0!important;border-radius:11px;width:100%;justify-content:center}
+.tabs button i{font-size:19px}.tabs button.on{background:var(--ac-soft)}
+#panel{padding:12px!important;gap:8px!important}
+.ac{background:var(--bg);border:1px solid var(--ln);border-radius:14px;overflow:hidden;flex-shrink:0}.ac.open{border-color:var(--ln2);background:var(--bg2)}
+.ach{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;padding:13px 14px;cursor:pointer;text-align:left;font-weight:700;font-size:13px;color:var(--tx)}
+.ach em{margin-left:auto;font-style:normal;font-weight:500;font-size:11px;color:var(--mut);max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ach i{font-style:normal;color:var(--mut);transition:.2s}.ac.open .ach i{transform:rotate(90deg);color:var(--ac)}
+.acb{padding:2px 14px 16px;display:flex;flex-direction:column;gap:13px}
+.seg{display:flex;flex-wrap:wrap;gap:5px}
+.seg button{background:var(--bg3);border:1px solid var(--ln2);border-radius:99px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;color:var(--tx2);transition:.12s}
+.seg button:hover{border-color:var(--ac);color:var(--tx)}.seg button.on{background:var(--ac);color:var(--ac-ink);border-color:var(--ac)}
+.hs{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x proximity}
+.mc{flex:0 0 138px;scroll-snap-align:start;background:var(--b);color:var(--t);border:1px solid var(--ln2);border-radius:14px;padding:13px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:.15s}
+.mc:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.mc i{display:block;height:5px;width:36px;border-radius:9px;background:var(--a);margin-bottom:9px}.mc b{font-size:13px}.mc small{font-size:10px;opacity:.65;line-height:1.3}
+.hs .swatch{flex:0 0 62px}
+.cols{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.cols .f span{font-size:10px}.cols .f input[type=color]{height:38px;padding:2px;border-radius:10px}
+.lay{grid-template-columns:repeat(3,1fr)!important}.lay span{display:none}.lay b{margin:0!important;font-size:12px!important;text-align:center}.lay button{padding:12px 6px!important}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.tgrid .tog{padding:9px 10px;font-size:12px}
+.ord{margin:0!important}.ord .tog{padding:8px 11px}
+.top .vsep{display:none}`;
+document.head.appendChild(st);
+
+const SEG=(l,k,v,o)=>`<div class="f"><span>${l}</span><div class="seg">${Object.entries(o).map(([a,b])=>`<button data-set="${k}|${a}" class="${a===v?"on":""}">${b}</button>`).join("")}</div></div>`;
+const acc=(tb,items)=>{const open=ACC[tb]===undefined?items[0][0]:ACC[tb];return items.map(([k,ti,sub,body])=>`<section class="ac${open===k?" open":""}"><button class="ach" data-acc="${tb}:${k}"><span>${ti}</span><em>${sub||""}</em><i>›</i></button>${open===k?`<div class="acb">${body}</div>`:""}</section>`).join("");};
+const FN=Object.fromEntries(Object.entries(FONTS).map(([k,v])=>[k,v.n.split(" (")[0]]));
+const GL={catalogo:"▦",landing:"▭",editorial:"☰",bio:"⋮",carta:"≡",portfolio:"◫"};
+const imgRow=(k,lb,v)=>`<div class="prod"><div class="ph"><div class="thumb">${v?`<img class="thumb" src="${v}">`:lb}</div><button class="b" data-up="${k}">Subir ${lb.toLowerCase()}</button>${v?`<button class="b dng" data-clr="${k}">Quitar</button>`:""}</div></div>`;
+
+const PANELS={
+inicio:s=>{
+  const cats=["Todas",...new Set(Object.values(PRESETS).map(p=>p.cat))];
+  const fl=pcat==="Todas"?Object.entries(PRESETS):Object.entries(PRESETS).filter(([k,p])=>p.cat===pcat);
+  return acc("inicio",[
+  ["estilos","Estilos listos",Object.keys(STYLES).length+" looks",`<div class="hs">${Object.entries(STYLES).map(([k,v])=>{const p=PRESETS[v.colors]||PRESETS.neon;return `<button class="mc" data-style="${k}" style="--b:${p.bg};--t:${p.tx};--a:${p.ac}"><i></i><b>${v.n}</b><small>${(LAYOUTS[v.layout]||{}).n||""} · ${SKINS[v.skin]||""}</small></button>`;}).join("")}</div><p class="small">Un click cambia estructura, skin, navegación y vistas.</p>`],
+  ["estructura","Estructura",LAYOUTS[s.layout].n,`<div class="lay">${Object.entries(LAYOUTS).map(([k,v])=>`<button data-layout="${k}" class="${s.layout===k?"on":""}"><b>${GL[k]||""} ${v.n}</b></button>`).join("")}</div>`],
+  ["paletas","Paletas",Object.keys(PRESETS).length+" combos",`<div class="ptabs">${cats.map(c=>`<button class="ptab ${c===pcat?"on":""}" data-pcat="${c}">${c}</button>`).join("")}</div><div class="hs">${fl.map(([k,p])=>`<div class="swatch ${s.colors.bg===p.bg&&s.colors.ac===p.ac?"active":""}" data-preset="${k}" title="${k}"><div class="cc"><i style="background:${p.bg}"></i><i style="background:${p.ac}"></i></div><small>${k}</small></div>`).join("")}</div>`],
+  ["rubros","Rubros de ejemplo",Object.keys(TEMPLATES).length+"",`<div class="tpl">${Object.entries(TEMPLATES).map(([k,t])=>`<button class="b" data-tpl="${k}">${t.n}</button>`).join("")}</div>`]]);},
+diseno:s=>acc("diseno",[
+  ["col","Colores","",`<div class="cols">${F("Fondo","colors.bg",s.colors.bg,"color")}${F("Texto","colors.tx",s.colors.tx,"color")}${F("Tarjeta","colors.card",s.colors.card,"color")}${F("Acento","colors.ac",s.colors.ac,"color")}${F("Acento 2","colors.ac2",s.colors.ac2,"color")}</div><div class="tgrid">${TOG("Degradé","grad",s.grad)}${TOG("Título degradé","titleGrad",s.titleGrad)}</div>`],
+  ["tip","Tipografía",FN[s.font],`${SEG("Fuente","font",s.font,FN)}${RNG("Tamaño de títulos","headScale",s.headScale,70,140,5,"%")}${RNG("Espaciado de letras","ls",s.ls,-4,12,1)}<div class="tgrid">${TOG("MAYÚSCULAS","upper",s.upper)}</div>`],
+  ["for","Formas","",`${SEG("Bordes","radius",s.radius,{recto:"Rectos",suave:"Suaves",redondo:"Redondos"})}${SEG("Botones","btnStyle",s.btnStyle,{solid:"Sólidos",outline:"Contorno",soft:"Suaves"})}${SEG("Tarjetas","cardStyle",s.cardStyle,{border:"Borde",flat:"Planas",shadow:"Sombra",glass:"Vidrio"})}`],
+  ["esp","Espacios","",`${SEG("Aire entre secciones","spacing",s.spacing,{compacto:"Compacto",normal:"Normal",amplio:"Amplio"})}${SEG("Ancho","width",s.width,{angosto:"Angosto",normal:"Normal",ancho:"Ancho"})}`],
+  ["por","Portada","",`${SEG("Alineación","heroAlign",s.heroAlign,{center:"Centrada",left:"Izquierda"})}${SEG("Altura","heroH",s.heroH,{medio:"Media",alto:"Alta",pantalla:"Completa"})}${RNG("Oscurecer foto","overlay",s.overlay,0,90,5,"%")}`],
+  ["var","Variantes de UI",SKINS[s.skin],`${SEG("Skin","skin",s.skin,SKINS)}${SEG("Navegación","nav",s.nav,NAVS)}${SEG("Productos","prod",s.prod,PRODVIEWS)}${SEG("Testimonios","test",s.test,TESTVIEWS)}${SEG("Beneficios","steps",s.steps,STEPSVIEWS)}`],
+  ["fx","Efectos","",`${SEG("Fondo animado","fx",s.fx,{none:"Ninguno",aurora:"Aurora",grid:"Grilla",spotlight:"Foco"})}<div class="tgrid">${TOG("Grano de película","grain",s.grain)}${TOG("Animar al scroll","animate",s.animate)}</div>`]]),
+marca:s=>acc("marca",[
+  ["id","Identidad",s.name,`${F("Nombre del negocio","name",s.name)}${F("Texto chico sobre el título","kicker",s.kicker,"text","Ej: Nueva colección")}${F("Emoji de la pestaña","emoji",s.emoji,"text","✨")}`],
+  ["img","Imágenes",(s.logo?"logo ":"")+(s.hero?"portada":""),`${imgRow("logo","Logo",s.logo)}${imgRow("hero","Portada",s.hero)}`]]),
+textos:s=>acc("textos",[
+  ["pri","Principal","",`${F("Frase principal","tagline",s.tagline)}${F("Texto del botón","cta",s.cta)}`],
+  ["ben","Beneficios","",`${F("1","points.0",s.points[0])}${F("2","points.1",s.points[1])}${F("3","points.2",s.points[2])}`],
+  ["tit","Títulos de secciones","",`<div class="row2">${F("Productos","prodT",s.prodT)}${F("Nosotros","aboutT",s.aboutT)}${F("Galería","galT",s.galT)}${F("Opiniones","testT",s.testT)}${F("Preguntas","faqT",s.faqT)}${F("Contacto","contT",s.contT)}</div>${F("Banda CTA (vacío = frase)","ctaT",s.ctaT)}`],
+  ["abo","Quiénes somos","",T("Texto","about",s.about,5)]]),
+productos:s=>{const n=s.productos.length;return acc("productos",s.productos.map((p,i)=>["p"+i,p.n||"Producto",p.p,`<div class="ph" style="display:flex;gap:8px;align-items:center"><div class="thumb">${p.img?`<img class="thumb" src="${p.img}">`:"Foto"}</div><button class="b" data-up="p:${i}">Foto</button>${p.img?`<button class="b dng" data-clr="p:${i}">Quitar</button>`:""}<span class="sp"></span><button class="b" data-mv="productos:${i}:-1" ${i?"":"disabled"}>↑</button><button class="b" data-mv="productos:${i}:1" ${i===n-1?"disabled":""}>↓</button><button class="b dng" data-rm="productos:${i}">✕</button></div>${A("productos",i,"n","Nombre",p.n)}<div class="row2">${A("productos",i,"p","Precio",p.p)}${A("productos",i,"old","Antes",p.old)}</div><div class="row2">${A("productos",i,"badge","Etiqueta",p.badge,"Nuevo…")}${A("productos",i,"link","Link de pago",p.link)}</div>${A("productos",i,"d","Descripción",p.d)}`]))+`<button class="b pri" data-add="productos">+ Agregar producto</button><p class="small">Sin link de pago el botón abre WhatsApp.</p>`;},
+secciones:s=>`<div class="small">Elegí qué se muestra y su orden.</div>`+s.order.map((k,i)=>`<div class="ord"><label class="tog" style="flex:1"><input type="checkbox" data-k="sections.${k}" ${s.sections[k]?"checked":""}> ${SL[k]}</label><button class="b" data-mvs="${i}:-1" ${i?"":"disabled"}>↑</button><button class="b" data-mvs="${i}:1" ${i===s.order.length-1?"disabled":""}>↓</button></div>`).join(""),
+extras:s=>acc("extras",[
+  ["gal","Galería",s.gallery.length+" fotos",`<div class="gal">${s.gallery.map((g,i)=>`<div><img src="${g}"><button data-galrm="${i}">✕</button></div>`).join("")}</div><button class="b pri" data-upgal="1">+ Agregar fotos</button><p class="small">Activá "Galería" en Secciones.</p>`],
+  ["opi","Opiniones",s.testimonials.length+"",s.testimonials.map((t,i)=>`<div class="prod"><div class="ph"><span class="sp"></span><button class="b dng" data-rm="testimonials:${i}">✕</button></div>${A("testimonials",i,"n","Nombre",t.n)}${AT("testimonials",i,"t","Opinión",t.t)}</div>`).join("")+`<button class="b" data-add="testimonials">+ Agregar opinión</button>`],
+  ["faq","Preguntas",s.faq.length+"",s.faq.map((q,i)=>`<div class="prod"><div class="ph"><span class="sp"></span><button class="b dng" data-rm="faq:${i}">✕</button></div>${A("faq",i,"q","Pregunta",q.q)}${AT("faq",i,"a","Respuesta",q.a)}</div>`).join("")+`<button class="b" data-add="faq">+ Agregar pregunta</button>`]]),
+contacto:s=>acc("contacto",[
+  ["con","Contacto",s.wa?"WhatsApp ok":"falta WhatsApp",`${F("WhatsApp (con código de país, sin +)","wa",s.wa,"tel","5493462123456")}${F("Teléfono","tel",s.tel,"tel")}${F("Email","mail",s.mail,"email")}`],
+  ["red","Redes","",`${F("Instagram","ig",s.ig,"text","@usuario")}${F("Facebook","fb",s.fb,"url")}${F("TikTok","tt",s.tt,"url")}${F("YouTube","yt",s.yt,"url")}`],
+  ["ubi","Ubicación","",`${F("Dirección (arma el mapa)","dir",s.dir)}${T("Horarios","horarios",s.horarios,3)}`],
+  ["pag","Pagos","",F("Link de Mercado Pago","mp",s.mp,"url","https://mpago.la/...")]]),
+avanzado:s=>acc("avanzado",[
+  ["anu","Barra de anuncio",s.announce.on?"activa":"",`${TOG("Mostrar barra arriba","announce.on",s.announce.on)}${F("Texto","announce.text",s.announce.text)}${F("Link","announce.link",s.announce.link,"url")}`],
+  ["enc","Encabezado y botón flotante","",`<div class="tgrid">${TOG("Encabezado fijo","stickyHeader",s.stickyHeader)}${TOG("Menú con links","navLinks",s.navLinks)}${TOG("Botón WhatsApp","fab.on",s.fab.on)}</div>${F("Texto del botón","fab.label",s.fab.label)}${SEG("Posición","fab.pos",s.fab.pos,{right:"Derecha",left:"Izquierda"})}`],
+  ["seo","SEO","",`${F("Título de la pestaña","seoT",s.seoT,"text",s.name)}${T("Descripción","seoD",s.seoD,3)}`],
+  ["cod","Código propio","",`${T("CSS extra","css",s.css,6,"code")}${T("HTML extra (al final)","html",s.html,6,"code")}`],
+  ["rie","Zona de riesgo","",`<button class="b dng" data-reset="1">Restablecer este proyecto</button>`]])
+};
+
+renderTabs=function(){$("tabs").innerHTML=Object.entries(TABS).map(([k,v])=>`<button data-tab="${k}" class="${k===tab?"on":""}"><i>${TAB_ICONS[k]}</i>${v}</button>`).join("");};
+renderPanel=function(){const s=S();if(!s)return;const sc=$("panel").scrollTop;$("panel").innerHTML=(PANELS[tab]||PANELS.inicio)(s);$("panel").scrollTop=sc;};
+
+document.addEventListener("click",ev=>{
+  const t=ev.target.closest("[data-set],[data-acc]");if(!t)return;const s=S();if(!s)return;
+  if(t.dataset.set){const x=t.dataset.set,i=x.indexOf("|");setPath(s,x.slice(0,i),x.slice(i+1));commit(true);return;}
+  const a=t.dataset.acc.split(":");ACC[a[0]]=(ACC[a[0]]===a[1]?"":a[1]);renderPanel();
+});
+renderTabs();renderPanel();
+}catch(err){console.error(err);alert("Revamp de UI: "+err.message);}
+})();
+</script>
+
 </body>
 </html>
