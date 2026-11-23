@@ -1219,6 +1219,172 @@ renderPanel();renderPrev();
 })();
 </script>
 
+    <script>
+/* ===== WEBHUB PRO · V4: todos los estilos juntos + ajuste rápido + Mercado Pago OAuth =====
+   Pegar antes del último </body>, DESPUÉS de los parches anteriores. */
+(function(){
+if(typeof buildSite!=="function"||typeof STYLES==="undefined"||typeof TABS==="undefined"||typeof renderPanel!=="function"){document.write('<body style="font:16px system-ui;padding:30px"><h3>Este archivo no se abre solo</h3><p>Es un parche: pegalo antes del último &lt;/body&gt; de tu WebHub PRO.</p></body>');return;}
+try{
+/* ---------- CONFIG MERCADO PAGO (completar) ---------- */
+const MP_APP_ID="PEGAR_APP_ID_DE_MERCADO_PAGO";
+const MP_REDIRECT=SUPABASE_URL+"/functions/v1/mp-oauth";   /* misma URL en el panel de tu app MP */
+const MP_CHECKOUT=SUPABASE_URL+"/functions/v1/mp-checkout";
+
+/* ---------- pestañas: Estilos primero, Pagos nueva ---------- */
+Object.keys(TABS).forEach(k=>delete TABS[k]);
+Object.assign(TABS,{estilos:"Estilos",diseno:"Ajustes",marca:"Marca",textos:"Textos",productos:"Productos",secciones:"Secciones",extras:"Extras",contacto:"Contacto",pagos:"Pagos",avanzado:"Avanzado"});
+Object.assign(TAB_ICONS,{estilos:"🎨",diseno:"🎛",pagos:"💳"});
+if(tab==="inicio")tab="estilos";
+
+const css=document.createElement("style");
+css.textContent=`.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.sc{background:var(--b);color:var(--t);border:1px solid var(--ln2);border-radius:14px;padding:14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:.15s;position:relative;overflow:hidden}
+.sc:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(0,0,0,.5);border-color:var(--a)}
+.sc i{display:flex;gap:4px;margin-bottom:9px}.sc i u{height:6px;border-radius:9px;background:var(--a);width:34px}.sc i u+u{background:var(--a2);width:16px}
+.sc b{font-size:15px}.sc small{font-size:12px;opacity:.7;line-height:1.3}.sc em{font-style:normal;font-size:10px;letter-spacing:1px;text-transform:uppercase;opacity:.55;margin-top:5px}
+.sc.on{outline:2px solid var(--a)}
+.q4{position:sticky;top:-12px;z-index:5;background:var(--panel);padding:4px 0 8px}
+.q4 input{width:100%;background:var(--bg);border:1px solid var(--ln2);border-radius:99px;padding:11px 16px;font-size:15px}
+.q4 input:focus{outline:none;border-color:var(--ac)}
+.mpc{display:flex;align-items:center;gap:12px;border:1px solid var(--ln2);border-radius:14px;padding:14px;background:var(--bg)}
+.mpc .dot{width:12px;height:12px;border-radius:50%;background:var(--mut);flex-shrink:0}.mpc.on .dot{background:var(--ac);box-shadow:0 0 12px var(--ac)}
+.mpb{background:#009ee3;border-color:#009ee3;color:#fff;font-weight:800}.mpb:hover{background:#27b2f0;border-color:#27b2f0}`;
+document.head.appendChild(css);
+
+/* ---------- galería unificada ---------- */
+let F4="Todos",Q4="";
+const KEYS=["layout","skin","nav","prod","test","steps","font","radius","spacing","cardStyle","upper","headScale","ls","grad","btnStyle","grain","titleGrad","fx","animate","mo","colors","width","heroAlign","heroH","overlay"];
+const SEG4=(l,k,v,o)=>`<div class="f"><span>${l}</span><div class="seg">${Object.entries(o).map(([a,b])=>`<button data-set="${k}|${a}" class="${a===v?"on":""}">${b}</button>`).join("")}</div></div>`;
+function items(){
+  const o=[];
+  Object.entries(STYLES).forEach(([k,v])=>o.push({t:"style",k,n:v.n,d:v.d,cat:v.cat==="Autor"?"Autor":"Clásicos",p:PRESETS[v.colors]||PRESETS.neon,tag:((LAYOUTS[v.layout]||{}).n||"")+" · "+(SKINS[v.skin]||"")}));
+  Object.entries(TEMPLATES).forEach(([k,v])=>o.push({t:"tpl",k,n:v.n,d:"Ejemplo con textos y productos",cat:"Rubros",p:v.colors,tag:(LAYOUTS[v.layout]||{}).n||""}));
+  return o;
+}
+function grid4(){
+  const q=Q4.trim().toLowerCase(),s=S();
+  const list=items().filter(x=>(F4==="Todos"||F4===x.cat)&&F4!=="Paletas"&&(!q||(x.n+" "+x.d+" "+x.tag+" "+x.cat).toLowerCase().includes(q)));
+  const pals=Object.entries(PRESETS).filter(([k,p])=>(F4==="Todos"||F4==="Paletas")&&(!q||(k+" "+p.cat).toLowerCase().includes(q)));
+  let h=list.length?`<div class="sg">${list.map(x=>`<button class="sc" ${x.t==="style"?`data-style="${x.k}"`:`data-tpl="${x.k}"`} style="--b:${x.p.bg};--t:${x.p.tx};--a:${x.p.ac};--a2:${x.p.ac2||x.p.ac}"><i><u></u><u></u></i><b>${x.n}</b><small>${x.d}</small><em>${x.cat} · ${x.tag}</em></button>`).join("")}</div>`:"";
+  if(pals.length)h+=`<div class="h" style="margin-top:14px">Solo colores <span class="cnt">${pals.length}</span></div><div class="hs">${pals.map(([k,p])=>`<div class="swatch ${s.colors.bg===p.bg&&s.colors.ac===p.ac?"active":""}" data-preset="${k}" title="${k} · ${p.cat}"><div class="cc"><i style="background:${p.bg}"></i><i style="background:${p.ac}"></i></div><small>${k}</small></div>`).join("")}</div>`;
+  return h||`<p class="small">Sin resultados.</p>`;
+}
+function draw4(){
+  const s=S();if(!s)return;const FN=Object.fromEntries(Object.entries(FONTS).map(([k,v])=>[k,v.n.split(" (")[0]]));
+  const sc=$("panel").scrollTop;
+  $("panel").innerHTML=`<div class="q4"><input id="sq4" placeholder="Buscar estilo, rubro, skin o color…" value="${esc(Q4)}"></div>
+<div class="seg">${["Todos","Autor","Clásicos","Rubros","Paletas"].map(c=>`<button data-f4="${c}" class="${c===F4?"on":""}">${c}</button>`).join("")}</div>
+<section class="ac open"><div class="ach" style="cursor:default"><span>Ajuste rápido</span><em>en vivo</em></div><div class="acb">
+${SEL("Fuente","font",s.font,FN)}${RNG("Tamaño de títulos","headScale",s.headScale,70,140,5,"%")}
+${SEG4("Bordes","radius",s.radius,{recto:"Rectos",suave:"Suaves",redondo:"Redondos"})}
+${SEG4("Aire","spacing",s.spacing,{compacto:"Compacto",normal:"Normal",amplio:"Amplio"})}
+${SEG4("Movimiento","mo",s.mo||"soft",{off:"Sin",soft:"Suave",epic:"Épico"})}
+<div class="seg"><button data-act="shuffle">🎲 Sorprendeme</button><button data-act="copy">Copiar estilo</button><button data-act="paste">Pegar estilo</button></div>
+<p class="small">Todo lo demás (colores, tarjetas, efectos, skins) está en <b>Ajustes</b>.</p></div></section>
+<div id="g4">${grid4()}</div>`;
+  $("panel").scrollTop=sc;
+}
+function refresh4(){const g=$("g4");if(g)g.innerHTML=grid4();}
+
+/* ---------- Mercado Pago ---------- */
+const MP={st:"?",id:""};
+async function mpRefresh(){
+  if(!cloudReady||!supabaseClient)return;
+  const {data}=await supabaseClient.from("wb_mp_status").select("mp_user_id").eq("store_id",cloudStoreId).maybeSingle();
+  MP.st=data?"on":"off";MP.id=data?data.mp_user_id:"";if(tab==="pagos")renderPanel();
+}
+async function mpConnect(){
+  if(!cloudReady){alert("Iniciá sesión primero.");return;}
+  if(MP_APP_ID.indexOf("PEGAR")===0){alert("Falta MP_APP_ID al principio del parche V4.");return;}
+  const state=crypto.randomUUID();
+  const {error}=await supabaseClient.from("wb_mp_states").insert({state,store_id:cloudStoreId,return_url:location.href.split("#")[0].split("?")[0]});
+  if(error){alert("No se pudo iniciar: "+error.message);return;}
+  location.href="https://auth.mercadopago.com/authorization?client_id="+MP_APP_ID+"&response_type=code&platform_id=mp&state="+state+"&redirect_uri="+encodeURIComponent(MP_REDIRECT);
+}
+async function mpDisconnect(){
+  if(!confirm("¿Desconectar Mercado Pago de este sitio?"))return;
+  const {error}=await supabaseClient.rpc("wb_mp_disconnect",{p_store:cloudStoreId});
+  if(error){alert(error.message);return;}
+  MP.st="off";MP.id="";renderPanel();
+}
+function drawPay(){
+  const s=S();if(!s)return;const on=MP.st==="on";
+  $("panel").innerHTML=`<section class="ac open"><div class="ach" style="cursor:default"><span>Mercado Pago</span><em>${on?"conectado":MP.st==="off"?"sin conectar":"…"}</em></div><div class="acb">
+<div class="mpc ${on?"on":""}"><span class="dot"></span><div style="flex:1"><b>${on?"Cuenta conectada":"Cuenta no conectada"}</b><div class="small">${on?"ID de vendedor: "+esc(MP.id):"Autorizá a WebHub a cobrar por vos (OAuth). No compartís tu contraseña ni tus claves."}</div></div></div>
+${on?`<button class="b dng" data-act="mpoff">Desconectar</button>`:`<button class="b mpb" data-act="mpon">Conectar con Mercado Pago</button>`}
+</div></section>
+<section class="ac open"><div class="ach" style="cursor:default"><span>Cobro en la web</span></div><div class="acb">
+${TOG("Botón «Pagar con Mercado Pago» en productos sin link propio","mpCheckout",s.mpCheckout)}
+${SEL("Moneda","mpCur",s.mpCur||"ARS",{ARS:"Peso argentino (ARS)",USD:"Dólar (USD)",UYU:"Peso uruguayo",CLP:"Peso chileno",MXN:"Peso mexicano",BRL:"Real"})}
+<p class="small">El monto se toma del campo Precio de cada producto (ej. "$18.000" → 18000). Los productos con "Link de pago" siguen usando ese link.</p>
+${F("Link manual de Mercado Pago (alternativa)","mp",s.mp,"url","https://mpago.la/...")}</div></section>`;
+}
+
+/* ---------- render ---------- */
+const _rp=renderPanel;
+renderPanel=function(){if(tab==="estilos")return draw4();if(tab==="pagos")return drawPay();return _rp();};
+
+document.addEventListener("input",ev=>{if(ev.target.id==="sq4"){Q4=ev.target.value;refresh4();}});
+document.addEventListener("click",async ev=>{
+  const t=ev.target.closest("[data-f4],[data-act],[data-tab]");if(!t)return;const s=S();if(!s)return;
+  if(t.dataset.tab==="pagos"){mpRefresh();return;}
+  if(t.dataset.f4){F4=t.dataset.f4;draw4();return;}
+  const a=t.dataset.act;
+  if(a==="mpon")return mpConnect();
+  if(a==="mpoff")return mpDisconnect();
+  if(a==="shuffle"){
+    const pk=x=>x[Math.floor(Math.random()*x.length)],sp=STYLES[pk(Object.keys(STYLES))];
+    Object.assign(s,sp.apply);["layout","skin","nav","prod","test","steps"].forEach(k=>{if(sp[k])s[k]=sp[k];});
+    s.colors={...PRESETS[pk(Object.keys(PRESETS))]};s.font=pk(Object.keys(FONTS));s.mo=sp.mo||"soft";
+    if(sp.sec)Object.assign(s.sections,sp.sec);commit(true);return;
+  }
+  if(a==="copy"){const o={};KEYS.forEach(k=>o[k]=s[k]);const j=JSON.stringify(o);
+    try{await navigator.clipboard.writeText(j);alert("Estilo copiado.");}catch(e){prompt("Copiá este texto:",j);}return;}
+  if(a==="paste"){const j=prompt("Pegá el estilo copiado:");if(!j)return;
+    try{const o=JSON.parse(j);KEYS.forEach(k=>{if(o[k]!==undefined)s[k]=o[k];});commit(true);}catch(e){alert("Estilo inválido.");}}
+});
+
+/* ---------- el sitio generado: botón de pago ---------- */
+function __mp(c){
+  var d=document;
+  d.querySelectorAll("[data-mp]").forEach(function(a){a.removeAttribute("target");if(a.classList.contains("btn"))a.textContent="Pagar con Mercado Pago";});
+  d.addEventListener("click",function(e){
+    var a=e.target.closest("[data-mp]");if(!a)return;
+    e.preventDefault();e.stopImmediatePropagation();a.style.opacity=.6;
+    fetch(c.fn,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store_id:c.s,index:+a.dataset.mp})})
+    .then(function(r){return r.json();})
+    .then(function(j){a.style.opacity="";if(!j.init_point){alert(j.error||"No se pudo iniciar el pago.");return;}
+      if(window.top===window)location.href=j.init_point;else window.open(j.init_point,"_blank");})
+    .catch(function(){a.style.opacity="";alert("Error de conexión.");});
+  },true);
+}
+const _b4=buildSite;
+buildSite=function(s){
+  let h=_b4(s);
+  try{
+    if(s.mpCheckout&&typeof cloudStoreId!=="undefined"&&cloudStoreId){
+      const num=(s.wa||"").replace(/\D/g,"");
+      s.productos.forEach((p,i)=>{if(p.link)return;
+        const u='href="https://wa.me/'+num+"?text="+encodeURIComponent("Hola! Quiero consultar por: "+p.n)+'"';
+        h=h.replace(u,()=>'href="#" data-mp="'+i+'"');});
+      h=h.replace("</body>",()=>"<script>("+__mp.toString()+")("+JSON.stringify({fn:MP_CHECKOUT,s:cloudStoreId})+")<\/script></body>");
+    }
+  }catch(e){console.error(e);}
+  return h;
+};
+
+/* ---------- vuelta desde Mercado Pago ---------- */
+const q=new URLSearchParams(location.search),r=q.get("mp");
+if(r){
+  tab="pagos";history.replaceState(null,"",location.pathname);
+  let n=0;const iv=setInterval(()=>{if(cloudReady){clearInterval(iv);renderTabs();mpRefresh();alert(r==="ok"?"¡Mercado Pago conectado!":"No se pudo conectar Mercado Pago. Probá de nuevo.");}else if(++n>60)clearInterval(iv);},500);
+}
+renderTabs();renderPanel();renderPrev();
+}catch(err){console.error(err);alert("V4: "+err.message);}
+})();
+</script>
+
+
 
 </body>
 </html>
