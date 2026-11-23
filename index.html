@@ -799,15 +799,27 @@ async function authAction(mode){
 }
 const S=()=>DB.list[DB.cur];
 
+function generarUUID(){
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : ((r & 0x3) | 0x8)).toString(16);
+  });
+}
+
 async function conectarMercadoPago(storeId) {
   if(!supabaseClient) return alert("Esperá a que cargue Supabase");
-  
-  const state = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("s_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+
+  const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+  if(userError || !user) return alert("Tenés que iniciar sesión para vincular Mercado Pago");
+
+  const state = generarUUID();
   const returnUrl = window.location.href;
 
   const { error } = await supabaseClient.from("wb_mp_states").insert({
     state: state,
     store_id: storeId,
+    user_id: user.id,
     return_url: returnUrl
   });
 
@@ -1281,8 +1293,8 @@ renderPanel();renderPrev();
 if(typeof buildSite!=="function"||typeof STYLES==="undefined"||typeof TABS==="undefined"||typeof renderPanel!=="function"){document.write('<body style="font:16px system-ui;padding:30px"><h3>Este archivo no se abre solo</h3><p>Es un parche: pegalo antes del último &lt;/body&gt; de tu WebHub PRO.</p></body>');return;}
 try{
 /* ---------- CONFIG MERCADO PAGO (completar) ---------- */
-const MP_APP_ID="PEGAR_APP_ID_DE_MERCADO_PAGO";
-const MP_REDIRECT=SUPABASE_URL+"/functions/v1/mp-oauth";   /* misma URL en el panel de tu app MP */
+/* MP_APP_ID viene del scope global (script principal) */
+const MP_REDIRECT=SUPABASE_URL+"/functions/v1/mp-oauth";
 const MP_CHECKOUT=SUPABASE_URL+"/functions/v1/mp-checkout";
 
 /* ---------- pestañas: Estilos primero, Pagos nueva ---------- */
@@ -1345,14 +1357,17 @@ function refresh4(){const g=$("g4");if(g)g.innerHTML=grid4();}
 const MP={st:"?",id:""};
 async function mpRefresh(){
   if(!cloudReady||!supabaseClient)return;
-  const {data}=await supabaseClient.from("wb_mp_status").select("mp_user_id").eq("store_id",cloudStoreId).maybeSingle();
-  MP.st=data?"on":"off";MP.id=data?data.mp_user_id:"";if(tab==="pagos")renderPanel();
+  const {data}=await supabaseClient.from("wb_stores").select("mp_access_token,mp_user_id").eq("id",cloudStoreId).maybeSingle();
+  MP.st=(data&&data.mp_access_token)?"on":"off";
+  MP.id=(data&&data.mp_user_id)||"";
+  if(tab==="pagos")renderPanel();
 }
 async function mpConnect(){
   if(!cloudReady){alert("Iniciá sesión primero.");return;}
-  if(MP_APP_ID.indexOf("PEGAR")===0){alert("Falta MP_APP_ID al principio del parche V4.");return;}
-  const state=crypto.randomUUID();
-  const {error}=await supabaseClient.from("wb_mp_states").insert({state,store_id:cloudStoreId,return_url:location.href.split("#")[0].split("?")[0]});
+  const {data:{user}}=await supabaseClient.auth.getUser();
+  if(!user){alert("Tenés que iniciar sesión.");return;}
+  const state=generarUUID();
+  const {error}=await supabaseClient.from("wb_mp_states").insert({state,store_id:cloudStoreId,user_id:user.id,return_url:location.href.split("#")[0].split("?")[0]});
   if(error){alert("No se pudo iniciar: "+error.message);return;}
   location.href="https://auth.mercadopago.com/authorization?client_id="+MP_APP_ID+"&response_type=code&platform_id=mp&state="+state+"&redirect_uri="+encodeURIComponent(MP_REDIRECT);
 }
