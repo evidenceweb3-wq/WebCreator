@@ -733,7 +733,7 @@ async function loadOrCreateCloudStore(user){
   let store=null;
   if(members?.length){
     const ids=members.map(x=>x.store_id);
-    const {data:stores,error:storeError}=await supabaseClient.from("wb_stores").select("id,name,slug,status").in("id",ids).order("created_at",{ascending:true});
+    const {data:stores,error:storeError}=await supabaseClient.from("wb_stores").select("id,name,slug,status,mp_access_token,mp_user_id").in("id",ids).order("created_at",{ascending:true});
     if(storeError)throw storeError;
     store=stores?.[0]||null;
   }
@@ -814,7 +814,7 @@ async function conectarMercadoPago(storeId) {
   if(userError || !user) return alert("Tenés que iniciar sesión para vincular Mercado Pago");
 
   const state = generarUUID();
-  const returnUrl = window.location.href;
+  const returnUrl = window.location.origin + window.location.pathname;
 
   const { error } = await supabaseClient.from("wb_mp_states").insert({
     state: state,
@@ -829,13 +829,6 @@ async function conectarMercadoPago(storeId) {
   window.location.href = authUrl;
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get("mp") === "ok") {
-    alert("¡Mercado Pago conectado con éxito!");
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
-});
 </script>
 
 <script>
