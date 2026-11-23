@@ -542,11 +542,15 @@ ${skinCss}`;
   const igUrl=s.ig?"https://instagram.com/"+s.ig.replace(/^@/,""):"";
   const mpBtn=s.mp?`<a class="btn gh" href="${e(s.mp)}" target="_blank" rel="noopener">Pagar con Mercado Pago</a>`:"";
   const Pr=s.productos;
-  const pbtn=p=>{const href=p.link||wa("Hola! Quiero consultar por: "+p.n);return `<a class="btn sm" href="${e(href)}" target="_blank" rel="noopener">${p.link?"Comprar":"Consultar"}</a>`;};
+  const pbtn=(p, index)=>{
+  if(p.link) return `<a class="btn sm" href="${e(p.link)}" target="_blank" rel="noopener">Comprar</a>`;
+  if(p.p && p.p.toLowerCase().includes("gratis")) return `<a class="btn sm" href="${wa("Hola! Quiero info de: "+p.n)}" target="_blank" rel="noopener">Consultar</a>`;
+  return `<button class="btn sm" onclick="pagarConMP('${DB.cur}', ${index}, this)">Comprar</button>`;
+};
   const badge=p=>p.badge?`<span style="position:absolute;top:10px;left:10px;background:var(--acf);color:var(--ink);font-size:12px;font-weight:800;padding:4px 10px;border-radius:var(--br)">${e(p.badge)}</span>`:"";
   const priceH=p=>`<span class="pr">${p.old?`<s class="mu" style="font-weight:400;font-size:.8em;margin-right:6px">${e(p.old)}</s>`:""}${e(p.p)}</span>`;
   const imgBox=(p,ratio)=>`<div style="position:relative">${p.img?`<img src="${p.img}" alt="${e(p.n)}" style="width:100%;aspect-ratio:${ratio};object-fit:cover">`:`<div style="aspect-ratio:${ratio};display:grid;place-items:center;background:linear-gradient(135deg,var(--ac),var(--cd));font-size:60px;font-weight:900;color:var(--ink)">${e((p.n||"?")[0])}</div>`}${badge(p)}</div>`;
-  const prodCard=p=>`<div class="card">${imgBox(p,"1")}<div style="padding:16px"><h3 style="font-size:20px">${e(p.n)}</h3><p class="mu" style="font-size:14px;margin:6px 0 12px">${e(p.d)}</p><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">${priceH(p)}${pbtn(p)}</div></div></div>`;
+  const prodCard=(p, i)=>`<div class="card">${imgBox(p,"1")}<div style="padding:16px"><h3 style="font-size:20px">${e(p.n)}</h3><p class="mu" style="font-size:14px;margin:6px 0 12px">${e(p.d)}</p><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">${priceH(p)}${pbtn(p, i)}</div></div></div>`;
   const sec=(id,title,inner,style="")=>`<section id="${id}" style="${style}"><div class="wrap">${title?`<h2 class="sec-t ${tcls}">${e(title)}</h2>`:""}${inner}</div></section>`;
 
   /* ===== PRODUCT VIEWS ===== */
@@ -555,14 +559,15 @@ ${skinCss}`;
     const v=s.prod==="auto"?(
       s.layout==="landing"?"lookbook":s.layout==="editorial"?"list":s.layout==="carta"?"menu":s.layout==="portfolio"?"overlay":"grid"
     ):s.prod;
-    if(v==="grid") return sec("productos",s.prodT,`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px">${Pr.map(prodCard).join("")}</div>`);
-    if(v==="list") return sec("productos",s.prodT,`<div style="max-width:820px">${Pr.map((p,i)=>`<div style="display:grid;grid-template-columns:44px 1fr auto;gap:16px;align-items:center;padding:20px 0;border-top:1px solid var(--ln)"><span class="pr ht" style="font-size:22px">${String(i+1).padStart(2,"0")}</span><div style="display:flex;gap:14px;align-items:center">${p.img?`<img src="${p.img}" alt="" style="width:72px;height:72px;object-fit:cover;border-radius:var(--r)">`:""}<div><h3 style="font-size:22px">${e(p.n)}${p.badge?` <small class="pr" style="font-size:12px;font-family:system-ui">${e(p.badge)}</small>`:""}</h3><p class="mu" style="font-size:14px">${e(p.d)}</p></div></div><div style="text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end">${priceH(p)}${pbtn(p)}</div></div>`).join("")}</div>`);
-    if(v==="lookbook") return sec("productos",s.prodT,`<div style="display:grid;gap:0">${Pr.map((p,i)=>`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px;align-items:center;padding:36px 0;border-top:1px solid var(--ln);${i%2?"direction:rtl":""}">${imgBox(p,"4/3")}<div style="${i%2?"direction:ltr":""}"><h3 style="font-size:clamp(24px,3.5vw,36px)">${e(p.n)}${p.badge?` <small class="pr" style="font-size:13px;font-family:system-ui">${e(p.badge)}</small>`:""}</h3><p class="mu" style="margin:10px 0 16px;font-size:16px">${e(p.d)}</p><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">${priceH(p)}${pbtn(p)}</div></div></div>`).join("")}</div>`);
-    if(v==="overlay") return sec("productos",s.prodT,`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">${Pr.map(p=>`<a class="card" style="display:block;position:relative;overflow:hidden;text-decoration:none" href="${e(p.link||wa("Hola! Quiero consultar por: "+p.n))}" target="_blank" rel="noopener">${imgBox(p,"4/5")}<div style="position:absolute;left:0;right:0;bottom:0;padding:48px 18px 18px;background:linear-gradient(transparent,rgba(0,0,0,.82));color:#fff"><h3 style="font-size:22px">${e(p.n)}</h3><div style="display:flex;justify-content:space-between;gap:10px;font-size:14px;opacity:.9"><span>${e(p.d)}</span><b>${e(p.p)}</b></div></div></a>`).join("")}</div>`);
-    if(v==="mosaic") return sec("productos",s.prodT,`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;grid-auto-rows:minmax(160px,auto)">${Pr.map((p,i)=>{const sizes=[[2,2],[2,1],[1,1],[1,2]];const [cs,rs]=sizes[i%sizes.length];return `<a class="card" href="${e(p.link||wa("Hola! Quiero consultar por: "+p.n))}" target="_blank" rel="noopener" style="position:relative;display:block;grid-column:span ${cs};grid-row:span ${rs};min-height:180px;overflow:hidden;text-decoration:none;color:#fff">${p.img?`<img src="${p.img}" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`:`<div style="width:100%;height:100%;background:linear-gradient(135deg,var(--ac),var(--cd));display:grid;place-items:center;font-size:60px;color:var(--ink);font-weight:900">${e((p.n||"?")[0])}</div>`}<div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,.78));display:flex;flex-direction:column;justify-content:flex-end;padding:16px;z-index:1"><h3 style="font-size:20px;color:#fff">${e(p.n)}</h3><span style="font-size:14px;opacity:.9">${e(p.p)}</span></div></a>`;}).join("")}</div>`);
-    if(v==="menu") return sec("productos",s.prodT,`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:8px 56px">${Pr.map(p=>`<div style="padding:14px 0;border-bottom:1px dashed var(--ln)"><div style="display:flex;align-items:baseline;gap:10px"><h3 style="font-size:21px">${e(p.n)}${p.badge?` <small class="pr" style="font-size:12px;font-family:system-ui">${e(p.badge)}</small>`:""}</h3><span style="flex:1;border-bottom:2px dotted var(--ln);transform:translateY(-4px)"></span>${priceH(p)}</div><p class="mu" style="font-size:14px;margin-top:4px">${e(p.d)}</p>${p.link?`<a class="pr" style="font-size:13px" href="${e(p.link)}" target="_blank" rel="noopener">Comprar →</a>`:""}</div>`).join("")}</div>`);
-    return sec("productos",s.prodT,`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px">${Pr.map(prodCard).join("")}</div>`);
+    if(v==="grid") return sec("productos",s.prodT,`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px">${Pr.map((p,i)=>prodCard(p,i)).join("")}</div>`);
+    if(v==="list") return sec("productos",s.prodT,`<div style="max-width:820px">${Pr.map((p,i)=>`<div style="display:grid;grid-template-columns:44px 1fr auto;gap:16px;align-items:center;padding:20px 0;border-top:1px solid var(--ln)"><span class="pr ht" style="font-size:22px">${String(i+1).padStart(2,"0")}</span><div style="display:flex;gap:14px;align-items:center">${p.img?`<img src="${p.img}" alt="" style="width:72px;height:72px;object-fit:cover;border-radius:var(--r)">`:""}<div><h3 style="font-size:22px">${e(p.n)}${p.badge?` <small class="pr" style="font-size:12px;font-family:system-ui">${e(p.badge)}</small>`:""}</h3><p class="mu" style="font-size:14px">${e(p.d)}</p></div></div><div style="text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end">${priceH(p)}${pbtn(p, i)}</div></div>`).join("")}</div>`);
+    if(v==="lookbook") return sec("productos",s.prodT,`<div style="display:grid;gap:0">${Pr.map((p,i)=>`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px;align-items:center;padding:36px 0;border-top:1px solid var(--ln);${i%2?"direction:rtl":""}">${imgBox(p,"4/3")}<div style="${i%2?"direction:ltr":""}"><h3 style="font-size:clamp(24px,3.5vw,36px)">${e(p.n)}${p.badge?` <small class="pr" style="font-size:13px;font-family:system-ui">${e(p.badge)}</small>`:""}</h3><p class="mu" style="margin:10px 0 16px;font-size:16px">${e(p.d)}</p><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">${priceH(p)}${pbtn(p, i)}</div></div></div>`).join("")}</div>`);
+      if(v==="overlay") return sec("productos",s.prodT,`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">${Pr.map((p,i)=>`<div class="card" style="position:relative;overflow:hidden">${p.link?`<a href="${e(p.link)}" target="_blank" rel="noopener" style="display:block">${imgBox(p,"4/5")}</a>`:imgBox(p,"4/5")}<div style="position:absolute;left:0;right:0;bottom:0;padding:48px 18px 18px;background:linear-gradient(transparent,rgba(0,0,0,.82));color:#fff;pointer-events:none"><h3 style="font-size:22px">${e(p.n)}</h3><div style="display:flex;justify-content:space-between;gap:10px;font-size:14px;opacity:.9"><span>${e(p.d)}</span><b>${e(p.p)}</b></div><div style="margin-top:10px;pointer-events:auto">${pbtn(p,i)}</div></div></div>`).join("")}</div>`);
+     if(v==="mosaic") return sec("productos",s.prodT,`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;grid-auto-rows:minmax(160px,auto)">${Pr.map((p,i)=>{const sizes=[[2,2],[2,1],[1,1],[1,2]];const [cs,rs]=sizes[i%sizes.length];return `<div class="card" style="position:relative;grid-column:span ${cs};grid-row:span ${rs};min-height:180px;overflow:hidden;color:#fff">${p.img?`<img src="${p.img}" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`:`<div style="width:100%;height:100%;background:linear-gradient(135deg,var(--ac),var(--cd));display:grid;place-items:center;font-size:60px;color:var(--ink);font-weight:900">${e((p.n||"?")[0])}</div>`}<div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,.78));display:flex;flex-direction:column;justify-content:flex-end;padding:16px;z-index:1"><h3 style="font-size:20px;color:#fff">${e(p.n)}</h3><span style="font-size:14px;opacity:.9">${e(p.p)}</span><div style="margin-top:10px">${pbtn(p,i)}</div></div></div>`;}).join("")}</div>`);
+     if(v==="menu") return sec("productos",s.prodT,`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:8px 56px">${Pr.map((p,i)=>`<div style="padding:14px 0;border-bottom:1px dashed var(--ln)"><div style="display:flex;align-items:baseline;gap:10px"><h3 style="font-size:21px">${e(p.n)}${p.badge?` <small class="pr" style="font-size:12px;font-family:system-ui">${e(p.badge)}</small>`:""}</h3><span style="flex:1;border-bottom:2px dotted var(--ln);transform:translateY(-4px)"></span>${priceH(p)}</div><p class="mu" style="font-size:14px;margin-top:4px">${e(p.d)}</p>${pbtn(p, i)}</div>`).join("")}</div>`);
+    return sec("productos",s.prodT,`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px">${Pr.map((p,i)=>prodCard(p,i)).join("")}</div>`);
   }
+
 
   /* ===== STEPS VIEWS ===== */
   function renderSteps(){
@@ -624,12 +629,31 @@ ${skinCss}`;
   const anim=s.animate?`<script>(function(){if(!("IntersectionObserver" in window))return;var t=document.querySelectorAll("section .card,section h2,.rvx");t.forEach(function(x){x.classList.add("rv")});var o=new IntersectionObserver(function(en){en.forEach(function(i){if(i.isIntersecting){i.target.classList.add("in");o.unobserve(i.target)}})},{threshold:.1});t.forEach(function(x){o.observe(x)})})()<\/script>`:"";
   const fav=encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${s.emoji||"✨"}</text></svg>`);
   const fxLayer=fxClass?`<div class="${fxClass}"></div>`:"";
-  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${e(s.seoT||s.name)}</title><meta name="description" content="${e(s.seoD||s.tagline)}"><meta name="theme-color" content="${e(c.bg)}"><meta property="og:title" content="${e(s.seoT||s.name)}"><meta property="og:description" content="${e(s.seoD||s.tagline)}"><meta property="og:type" content="website"><link rel="icon" href="data:image/svg+xml,${fav}">${gfLink}<style>${css}${s.css}</style></head><body class="${s.layout} skin-${s.skin}">${fxLayer}${ann}${top}${mid}${foot}${fab}${anim}${s.html}</body></html>`;
+    const scriptMP = `<script>
+  async function pagarConMP(storeId, index, btn){
+    const txt=btn?btn.innerText:"";
+    if(btn){btn.innerText="Procesando...";btn.disabled=true;}
+    try{
+      const res=await fetch("${SUPABASE_URL}/functions/v1/mp-checkout",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({store_id:storeId,index:index})
+      });
+      const data=await res.json();
+      if(data.init_point){window.location.href=data.init_point;return;}
+      alert("Error: "+(data.error||"No se pudo generar el pago"));
+    }catch(e){alert("Error de conexión con el servidor");}
+    if(btn){btn.innerText=txt;btn.disabled=false;}
+  }
+  <\/script>`;
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${e(s.seoT||s.name)}</title><meta name="description" content="${e(s.seoD||s.tagline)}"><meta name="theme-color" content="${e(c.bg)}"><meta property="og:title" content="${e(s.seoT||s.name)}"><meta property="og:description" content="${e(s.seoD||s.tagline)}"><meta property="og:type" content="website"><link rel="icon" href="data:image/svg+xml,${fav}">${gfLink}<style>${css}${s.css}</style></head><body class="${s.layout} skin-${s.skin}">${fxLayer}${ann}${top}${mid}${foot}${fab}${anim}${s.html}${scriptMP}</body></html>`;
 }
 
 /* ================= STORAGE ================= */
 const SUPABASE_URL = "https://xlmcfasawbsrblwtxrgb.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_ywKS0a9KCBfEjFjErpJwpA_I6kLVSjZ";
+const MP_APP_ID = "2618196341026968"; // 👈 PONÉ TU CLIENT ID ACÁ (el número largo que vimos)
+const MP_REDIRECT = "https://xlmcfasawbsrblwtxrgb.supabase.co/functions/v1/mp-oauth";
 let supabaseClient = null;
 let cloudUser = null;
 let cloudStoreId = null;
@@ -774,6 +798,32 @@ async function authAction(mode){
   if(result.data.session)await finishCloudLogin(result.data.session);
 }
 const S=()=>DB.list[DB.cur];
+
+async function conectarMercadoPago(storeId) {
+  if(!supabaseClient) return alert("Esperá a que cargue Supabase");
+  
+  const state = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("s_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+  const returnUrl = window.location.href;
+
+  const { error } = await supabaseClient.from("wb_mp_states").insert({
+    state: state,
+    store_id: storeId,
+    return_url: returnUrl
+  });
+
+  if (error) return alert("Error al iniciar la conexión: " + error.message);
+
+  const authUrl = `https://auth.mercadopago.com/authorization?client_id=${MP_APP_ID}&response_type=code&platform_id=mp&state=${state}&redirect_uri=${MP_REDIRECT}`;
+  window.location.href = authUrl;
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("mp") === "ok") {
+    alert("¡Mercado Pago conectado con éxito!");
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+});
 </script>
 
 <script>
@@ -881,7 +931,12 @@ ${s.faq.map((q,i)=>`<div class="prod"><div class="ph"><span class="sp"></span><b
     h=`${F("WhatsApp (con código de país, sin +)","wa",s.wa,"tel","5493462123456")}${F("Teléfono para mostrar","tel",s.tel,"tel")}${F("Email","mail",s.mail,"email")}
 <div class="h">Redes</div>${F("Instagram","ig",s.ig,"text","@usuario")}${F("Facebook (link)","fb",s.fb,"url")}${F("TikTok (link)","tt",s.tt,"url")}${F("YouTube (link)","yt",s.yt,"url")}
 <div class="h">Ubicación</div>${F("Dirección (también arma el mapa)","dir",s.dir)}${T("Horarios","horarios",s.horarios,3)}
-<div class="h">Pagos</div>${F("Link de Mercado Pago","mp",s.mp,"url","https://mpago.la/...")}`;
+<div class="h">Pagos</div>
+<div class="prod" style="background:var(--ac-soft);border-color:var(--ac);margin-bottom:12px">
+  <p class="small" style="color:var(--tx);margin-bottom:8px">Conectá tu cuenta de Mercado Pago para que los cobros de la web caigan directo en tu cuenta.</p>
+  <button class="b pri" onclick="conectarMercadoPago('${DB.cur}')">🔗 Vincular Mercado Pago</button>
+</div>
+${F("Link de pago manual (opcional)","mp",s.mp,"url","https://mpago.la/...")}`;
   }
   if(tab==="avanzado"){
     h=`<div class="h">Barra de anuncio</div>${TOG("Mostrar barra arriba","announce.on",s.announce.on)}${F("Texto","announce.text",s.announce.text)}${F("Link (opcional)","announce.link",s.announce.link,"url")}
