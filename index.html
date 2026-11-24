@@ -1447,6 +1447,87 @@ renderTabs();renderPanel();renderPrev();
 })();
 </script>
 
+    <script>
+/* ===== WEBHUB PRO · V6: publicar en GitHub Pages con un click =====
+   Pegar antes del último </body>, después de los parches anteriores. Requiere la función publish-site. */
+(function(){
+if(typeof buildSite!=="function"||typeof TABS==="undefined"||typeof prepareCloudConfig!=="function"){document.write('<body style="font:16px system-ui;padding:30px"><h3>Este archivo no se abre solo</h3><p>Es un parche: pegalo antes del último &lt;/body&gt; de tu WebHub PRO.</p></body>');return;}
+try{
+const PUB={msg:"",err:"",busy:false};
+
+/* pestaña Publicar (antes de Avanzado) + botón principal arriba */
+const old={...TABS};Object.keys(TABS).forEach(k=>delete TABS[k]);
+Object.keys(old).forEach(k=>{if(k==="avanzado")TABS.publicar="Publicar";TABS[k]=old[k];});
+if(!TABS.publicar)TABS.publicar="Publicar";
+TAB_ICONS.publicar="🚀";
+const bp=document.createElement("button");bp.className="b pri";bp.id="bPub";bp.textContent="🚀 Publicar";
+$("bExport").className="b";$("bExport").before(bp);
+
+const st=document.createElement("style");
+st.textContent=`.pbc{display:flex;align-items:center;gap:12px;border:1px solid var(--ln2);border-radius:14px;padding:14px;background:var(--bg)}
+.pbc .dot{width:12px;height:12px;border-radius:50%;background:var(--mut);flex-shrink:0}.pbc.on .dot{background:var(--ac);box-shadow:0 0 12px var(--ac)}
+.pbc a{color:var(--ac);font-weight:700}.pbg{padding:15px!important;font-size:16px!important;width:100%}`;
+document.head.appendChild(st);
+
+function drawPub(){
+  const s=S();if(!s)return;const p=s.pub;
+  $("panel").innerHTML=`<section class="ac open"><div class="ach" style="cursor:default"><span>Tu sitio en internet</span><em>${p?"publicado":"sin publicar"}</em></div><div class="acb">
+<div class="pbc ${p?"on":""}"><span class="dot"></span><div style="flex:1;min-width:0"><b>${p?"Tu web está online":"Todavía no publicaste"}</b><div class="small" style="overflow-wrap:anywhere">${p?`<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.url)}</a><br>Última vez: ${new Date(p.at).toLocaleString("es-AR")}`:"Con un click queda online, con link propio y HTTPS."}</div></div></div>
+<button class="b pri pbg" data-pub="go" ${PUB.busy?"disabled":""}>${PUB.busy?"Publicando…":p?"🚀 Actualizar sitio":"🚀 Publicar sitio"}</button>
+${PUB.msg?`<p class="small">${esc(PUB.msg)}</p>`:""}${PUB.err?`<p class="small" style="color:var(--dng)">${esc(PUB.err)}</p>`:""}
+${p?`<div class="seg"><button data-pub="copy">Copiar link</button><button data-pub="open">Abrir</button><button data-pub="off" style="color:var(--dng)">Despublicar</button></div>`:""}
+<p class="small">Los cambios tardan 1 a 2 minutos en verse online. Las fotos se suben a la nube y el HTML queda liviano.</p></div></section>`;
+}
+const _rp6=renderPanel;
+renderPanel=function(){if(tab==="publicar")return drawPub();return _rp6();};
+
+async function errOf(error){let m=error.message||"Error";try{const j=await error.context.json();if(j&&j.error)m=j.error;}catch(e){}return m;}
+function step(m){PUB.msg=m;if(tab==="publicar")drawPub();}
+
+async function publish(){
+  if(PUB.busy)return;
+  if(typeof cloudReady==="undefined"||!cloudReady){alert("Iniciá sesión primero para publicar.");return;}
+  const s=S();PUB.busy=true;PUB.err="";
+  try{
+    step("Subiendo imágenes…");
+    const cfg=await prepareCloudConfig(JSON.parse(JSON.stringify(s)));   /* fotos a URLs, nada de base64 */
+    step("Generando la página…");
+    let html=buildSite(normalize(cfg));
+    html=html.split("${SUPABASE_URL}").join(SUPABASE_URL);              /* red de seguridad */
+    if(html.length>4.5e6)throw new Error("La página pesa "+(html.length/1e6).toFixed(1)+" MB. Reducí fotos de la galería o del producto.");
+    step("Publicando en GitHub…");
+    const {data,error}=await supabaseClient.functions.invoke("publish-site",{body:{store_id:cloudStoreId,html}});
+    if(error)throw new Error(await errOf(error));
+    if(!data||!data.url)throw new Error("Respuesta inesperada del servidor.");
+    s.pub={url:data.url,at:new Date().toISOString()};commit(false);
+    PUB.msg="¡Listo! En 1 o 2 minutos ya se ve online.";
+  }catch(e){PUB.err=e.message||String(e);PUB.msg="";console.error("publish:",e);}
+  PUB.busy=false;if(tab==="publicar")drawPub();
+}
+async function unpublish(){
+  if(!confirm("¿Sacar la web de internet? Podés volver a publicarla cuando quieras."))return;
+  PUB.busy=true;PUB.err="";step("Despublicando…");
+  const {error}=await supabaseClient.functions.invoke("publish-site",{body:{store_id:cloudStoreId,action:"unpublish"}});
+  PUB.busy=false;
+  if(error){PUB.err=await errOf(error);PUB.msg="";}else{const s=S();s.pub=null;commit(false);PUB.msg="La web ya no está online.";}
+  drawPub();
+}
+
+document.addEventListener("click",async ev=>{
+  const t=ev.target.closest("[data-pub],#bPub");if(!t)return;
+  const a=t.id==="bPub"?"go":t.dataset.pub,s=S();
+  if(t.id==="bPub"){tab="publicar";document.body.classList.remove("show-prev");renderTabs();renderPanel();}
+  if(a==="go")return publish();
+  if(a==="off")return unpublish();
+  if(a==="open"&&s.pub)return void window.open(s.pub.url,"_blank");
+  if(a==="copy"&&s.pub){try{await navigator.clipboard.writeText(s.pub.url);alert("Link copiado.");}catch(e){prompt("Copiá el link:",s.pub.url);}}
+});
+
+renderTabs();renderPanel();
+}catch(err){console.error(err);alert("V6: "+err.message);}
+})();
+</script>
+
 
 
 </body>
