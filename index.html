@@ -743,12 +743,18 @@ ${skinCss}`;
   const skip=bio?["prod","cta","pts"]:[];
   const mid=s.order.filter(k=>s.sections[k]&&!skip.includes(k)).map(k=>SM[k]()).join("");
   const ann=s.announce.on&&s.announce.text?`<div style="background:var(--acf);color:var(--ink);text-align:center;padding:9px 16px;font-weight:700;font-size:14px">${s.announce.link?`<a href="${e(s.announce.link)}" target="_blank" rel="noopener">${e(s.announce.text)}</a>`:e(s.announce.text)}</div>`:"";
-  const foot=`
+const PAY_LOGOS=`<div style="display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid color-mix(in srgb,var(--tx) 14%,transparent)">
+<span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;opacity:.55;margin-right:6px;font-weight:700">Medios de pago</span>
+<span style="background:#1a1f71;color:#fff;padding:5px 10px;border-radius:5px;font:800 11px system-ui;letter-spacing:.5px">VISA</span>
+<span style="background:#eb001b;color:#fff;padding:5px 10px;border-radius:5px;font:800 11px system-ui">mastercard</span>
+<span style="background:#006fcf;color:#fff;padding:5px 10px;border-radius:5px;font:800 11px system-ui;letter-spacing:.5px">AMEX</span>
+<span style="background:#009ee3;color:#fff;padding:5px 10px;border-radius:5px;font:800 11px system-ui">Mercado Pago</span>
+</div>`;
+const foot=`
 <footer class="mu wh-site-footer">
   <div class="wh-footer-copy">© ${new Date().getFullYear()} ${e(s.name)}</div>
-  ${s.showPayFooter!==false?'<div id="wh-payment-methods"></div>':""}
+  ${s.showPayFooter!==false?PAY_LOGOS:""}
 </footer>
-${s.showPayFooter!==false?'<script src="./footer-pagos.js"><\/script>':""}
 `;
   const fab=(num&&s.fab.on)?`<a class="fab" href="${waMain}" target="_blank" rel="noopener">${e(s.fab.label||"WhatsApp")}</a>`:"";
   const anim=s.animate?`<script>(function(){if(!("IntersectionObserver" in window))return;var t=document.querySelectorAll("section .card,section h2,.rvx");t.forEach(function(x){x.classList.add("rv")});var o=new IntersectionObserver(function(en){en.forEach(function(i){if(i.isIntersecting){i.target.classList.add("in");o.unobserve(i.target)}})},{threshold:.1});t.forEach(function(x){o.observe(x)})})()<\/script>`:"";
@@ -1620,7 +1626,10 @@ ${TOG("Botón «Pagar con Mercado Pago» en productos sin link propio","mpChecko
 ${SEL("Moneda","mpCur",s.mpCur||"ARS",{ARS:"Peso argentino (ARS)",USD:"Dólar (USD)",UYU:"Peso uruguayo",CLP:"Peso chileno",MXN:"Peso mexicano",BRL:"Real"})}
 <p class="small">El monto se toma del campo Precio de cada producto (ej. "$18.000" → 18000). Los productos con "Link de pago" siguen usando ese link.</p>
 ${F("URL de vuelta tras el pago","backUrl",s.backUrl,"url","https://tu-dominio.com/gracias")}
-${F("Link manual de Mercado Pago (alternativa)","mp",s.mp,"url","https://mpago.la/...")}</div></section>`;
+${F("Link manual de Mercado Pago (alternativa)","mp",s.mp,"url","https://mpago.la/...")}</div></section>
+<section class="ac open"><div class="ach" style="cursor:default"><span>Logos en el footer</span><em>${s.showPayFooter!==false?"activos":"ocultos"}</em></div><div class="acb">
+${TOG("Mostrar logos de medios de pago al pie del sitio","showPayFooter",s.showPayFooter!==false)}
+<p class="small">Se ven abajo de todo en la web publicada. No afecta los cobros de Mercado Pago.</p></div></section>`;
 }
 
 /* ---------- render ---------- */
