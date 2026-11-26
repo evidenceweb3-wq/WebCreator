@@ -743,12 +743,12 @@ ${skinCss}`;
   const skip=bio?["prod","cta","pts"]:[];
   const mid=s.order.filter(k=>s.sections[k]&&!skip.includes(k)).map(k=>SM[k]()).join("");
   const ann=s.announce.on&&s.announce.text?`<div style="background:var(--acf);color:var(--ink);text-align:center;padding:9px 16px;font-weight:700;font-size:14px">${s.announce.link?`<a href="${e(s.announce.link)}" target="_blank" rel="noopener">${e(s.announce.text)}</a>`:e(s.announce.text)}</div>`:"";
-const PAY_LOGOS=`<div style="display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid color-mix(in srgb,var(--tx) 14%,transparent)">
-<span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;opacity:.55;margin-right:6px;font-weight:700">Medios de pago</span>
-<span style="background:#1a1f71;color:#fff;padding:5px 10px;border-radius:5px;font:800 11px system-ui;letter-spacing:.5px">VISA</span>
-<span style="background:#eb001b;color:#fff;padding:5px 10px;border-radius:5px;font:800 11px system-ui">mastercard</span>
-<span style="background:#006fcf;color:#fff;padding:5px 10px;border-radius:5px;font:800 11px system-ui;letter-spacing:.5px">AMEX</span>
-<span style="background:#009ee3;color:#fff;padding:5px 10px;border-radius:5px;font:800 11px system-ui">Mercado Pago</span>
+const PAY_LOGOS=`<div style="margin-top:24px;padding-top:22px;border-top:1px solid color-mix(in srgb,var(--tx) 10%,transparent);display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;letter-spacing:.2px;opacity:.78">
+<span style="display:inline-flex;align-items:center;gap:7px">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+Compra segura a través de
+</span>
+<img src="${MP_LOGO_URL}" alt="Mercado Pago" style="height:17px;width:auto;display:inline-block;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--ac) 35%,transparent))">
 </div>`;
 const foot=`
 <footer class="mu wh-site-footer">
@@ -1627,10 +1627,9 @@ ${SEL("Moneda","mpCur",s.mpCur||"ARS",{ARS:"Peso argentino (ARS)",USD:"Dólar (U
 <p class="small">El monto se toma del campo Precio de cada producto (ej. "$18.000" → 18000). Los productos con "Link de pago" siguen usando ese link.</p>
 ${F("URL de vuelta tras el pago","backUrl",s.backUrl,"url","https://tu-dominio.com/gracias")}
 ${F("Link manual de Mercado Pago (alternativa)","mp",s.mp,"url","https://mpago.la/...")}</div></section>
-<section class="ac open"><div class="ach" style="cursor:default"><span>Logos en el footer</span><em>${s.showPayFooter!==false?"activos":"ocultos"}</em></div><div class="acb">
-${TOG("Mostrar logos de medios de pago al pie del sitio","showPayFooter",s.showPayFooter!==false)}
-<p class="small">Se ven abajo de todo en la web publicada. No afecta los cobros de Mercado Pago.</p></div></section>`;
-}
+<section class="ac open"><div class="ach" style="cursor:default"><span>Sello de compra segura</span><em>${s.showPayFooter!==false?"visible":"oculto"}</em></div><div class="acb">
+${TOG("Mostrar «Compra segura a través de Mercado Pago» en el footer","showPayFooter",s.showPayFooter!==false)}
+<p class="small">Sello limpio con candado + logo MP al pie del sitio. Refuerza la confianza. No afecta los cobros.</p></div></section>`;
 
 /* ---------- render ---------- */
 const _rp=renderPanel;
