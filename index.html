@@ -663,7 +663,7 @@ ${skinCss}`;
   const pbtn=(p, index)=>{
   if(p.link) return `<a class="btn sm" href="${e(p.link)}" target="_blank" rel="noopener">Comprar</a>`;
   if(p.p && p.p.toLowerCase().includes("gratis")) return `<a class="btn sm" href="${wa("Hola! Quiero info de: "+p.n)}" target="_blank" rel="noopener">Consultar</a>`;
-  return `<button class="btn sm" onclick="pagarConMP('${DB.cur}', ${index}, this)">Comprar</button>`;
+  return `<button class="btn sm" onclick="pagarConMP('${cloudStoreId||DB.cur}', ${index}, this)">Comprar</button>`;
 };
   const badge=p=>p.badge?`<span style="position:absolute;top:10px;left:10px;background:var(--acf);color:var(--ink);font-size:12px;font-weight:800;padding:4px 10px;border-radius:var(--br)">${e(p.badge)}</span>`:"";
   const priceH=p=>`<span class="pr">${p.old?`<s class="mu" style="font-weight:400;font-size:.8em;margin-right:6px">${e(p.old)}</s>`:""}${e(p.p)}</span>`;
@@ -758,7 +758,11 @@ ${skinCss}`;
         body:JSON.stringify({store_id:storeId,index:index})
       });
       const data=await res.json();
-      if(data.init_point){window.location.href=data.init_point;return;}
+      if(data.init_point){
+  if(window.top===window){window.location.href=data.init_point;}
+  else{window.open(data.init_point,"_blank");}
+  return;
+}
       alert("Error: "+(data.error||"No se pudo generar el pago"));
     }catch(e){alert("Error de conexión con el servidor");}
     if(btn){btn.innerText=txt;btn.disabled=false;}
@@ -1745,6 +1749,7 @@ async function publish(){
     const {data,error}=await supabaseClient.functions.invoke("publish-site",{body:{store_id:cloudStoreId,html}});
     if(error)throw new Error(await errOf(error));
     if(!data||!data.url)throw new Error("Respuesta inesperada del servidor.");
+    if(!s.backUrl)s.backUrl=data.url;
     s.pub={url:data.url,at:new Date().toISOString()};commit(false);
     PUB.msg="¡Listo! En 1 o 2 minutos ya se ve online.";
     UIToast("¡Sitio publicado! En 1-2 min ya se ve online.","ok",6000);
