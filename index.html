@@ -240,6 +240,82 @@ button,select,input,textarea{font:inherit;color:inherit}
 <input type="file" id="fileImg" accept="image/*" hidden>
 <input type="file" id="fileGal" accept="image/*" multiple hidden>
 
+  <!-- ============ UI KIT: toast + modal ============ -->
+<style id="uiKitCSS">
+#toastWrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:calc(100vw - 40px)}
+.toast{background:#0b0f15;border:1px solid #232e3f;border-left:3px solid var(--ac);border-radius:10px;padding:12px 18px 12px 14px;color:#e7ecf3;font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.55);min-width:240px;max-width:400px;pointer-events:auto;animation:toastIn .3s ease;display:flex;gap:10px;align-items:flex-start;line-height:1.4;cursor:pointer}
+.toast.err{border-left-color:var(--dng)}
+.toast.ok{border-left-color:var(--ac)}
+.toast.info{border-left-color:var(--info)}
+.toast .ico{flex-shrink:0;font-size:16px;line-height:1.3}
+.toast .msg{flex:1;overflow-wrap:anywhere}
+.toast.out{animation:toastOut .25s ease forwards}
+@keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toastOut{to{transform:translateX(120%);opacity:0}}
+#uiModal{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.65);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px;animation:modalIn .2s ease}
+#uiModal.show{display:flex}
+@keyframes modalIn{from{opacity:0}to{opacity:1}}
+.uimCard{background:linear-gradient(180deg,#0f141b,#0a0d12);border:1px solid #1c2534;border-radius:16px;padding:24px 26px;max-width:440px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:uimCardIn .25s ease}
+@keyframes uimCardIn{from{transform:scale(.95) translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.uimCard h3{font-size:18px;margin-bottom:10px;font-weight:800;color:#e7ecf3}
+.uimCard p{font-size:14px;color:#a0abb9;line-height:1.55;margin-bottom:22px;overflow-wrap:anywhere}
+.uimCard .acts{display:flex;gap:10px;justify-content:flex-end}
+.uimCard .acts .b{padding:10px 18px;font-size:14px}
+#uiModal .uimCard .b.pri.danger{background:var(--dng);border-color:var(--dng);color:#fff}
+#uiModal .uimCard .b.pri.danger:hover{background:#ff7584;border-color:#ff7584}
+@media(max-width:520px){#toastWrap{left:20px;right:20px;max-width:none}.uimCard .acts .b{flex:1}}
+</style>
+<script>
+/* Global toast + modal. Available everywhere after this script. */
+window.UIToast=function(msg,type,timeout){
+  type=type||"info";timeout=timeout==null?4000:timeout;
+  var wrap=document.getElementById("toastWrap");
+  if(!wrap){wrap=document.createElement("div");wrap.id="toastWrap";document.body.appendChild(wrap);}
+  var icons={ok:"✅",err:"⚠️",info:"ℹ️"};
+  var t=document.createElement("div");
+  t.className="toast "+(type==="ok"?"ok":type==="err"?"err":"info");
+  var i=document.createElement("span");i.className="ico";i.textContent=icons[type]||icons.info;
+  var m=document.createElement("span");m.className="msg";m.textContent=String(msg==null?"":msg);
+  t.appendChild(i);t.appendChild(m);wrap.appendChild(t);
+  var remove=function(){t.classList.add("out");setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},250);};
+  var timer=setTimeout(remove,timeout);
+  t.addEventListener("click",function(){clearTimeout(timer);remove();});
+  return t;
+};
+window.UIConfirm=function(opts){
+  return new Promise(function(resolve){
+    var m=document.getElementById("uiModal");
+    if(!m){
+      m=document.createElement("div");m.id="uiModal";
+      m.innerHTML='<div class="uimCard"><h3></h3><p></p><div class="acts"><button class="b" data-a="no">Cancelar</button><button class="b pri" data-a="yes">Confirmar</button></div></div>';
+      document.body.appendChild(m);
+    }
+    var o=typeof opts==="string"?{message:opts}:(opts||{});
+    m.querySelector("h3").textContent=o.title||"Confirmar";
+    m.querySelector("p").textContent=o.message||"¿Estás seguro?";
+    var yes=m.querySelector('[data-a="yes"]');
+    var no=m.querySelector('[data-a="no"]');
+    yes.textContent=o.confirmText||"Confirmar";
+    no.textContent=o.cancelText||"Cancelar";
+    yes.className="b pri"+(o.danger?" danger":"");
+    var close=function(v){
+      m.classList.remove("show");
+      yes.onclick=null;no.onclick=null;m.onclick=null;
+      document.removeEventListener("keydown",onKey);
+      resolve(v);
+    };
+    var onKey=function(e){if(e.key==="Escape")close(false);};
+    yes.onclick=function(){close(true);};
+    no.onclick=function(){close(false);};
+    m.onclick=function(e){if(e.target===m)close(false);};
+    document.addEventListener("keydown",onKey);
+    m.classList.add("show");
+    setTimeout(function(){no.focus();},50);
+  });
+};
+</script>
+<!-- ============ /UI KIT ============ -->
+
 <script>
 /* ================= DATA ================= */
 const PRESETS = {
@@ -689,7 +765,7 @@ function loadDB(){
 let warned=false;
 function saveDB(){
   try{localStorage.setItem("webhub_v2",JSON.stringify(DB));}
-  catch(e){if(!warned){warned=true;alert("Se llenó la memoria del navegador. Descargá el proyecto con 'Guardar .json' para no perderlo.");}}
+  catch(e){if(!warned){warned=true;UIToast("Se llenó la memoria del navegador. Descargá el proyecto con 'Guardar .json' para no perderlo.","err",8000);}}
   scheduleCloudSave();
 }
 function setCloudStatus(message,isError=false){
@@ -819,10 +895,10 @@ function generarUUID(){
 }
 
 async function conectarMercadoPago(storeId) {
-  if(!supabaseClient) return alert("Esperá a que cargue Supabase");
+  if(!supabaseClient) return UIToast("Esperá a que cargue Supabase","err");
 
   const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-  if(userError || !user) return alert("Tenés que iniciar sesión para vincular Mercado Pago");
+  if(userError || !user) return UIToast("Tenés que iniciar sesión para vincular Mercado Pago","err");
 
   const state = generarUUID();
   const returnUrl = window.location.origin + window.location.pathname;
@@ -834,8 +910,9 @@ async function conectarMercadoPago(storeId) {
     return_url: returnUrl
   });
 
-  if (error) return alert("Error al iniciar la conexión: " + error.message);
+  if (error) return UIToast("Error al iniciar la conexión: " + error.message,"err",6000);
 
+  UIToast("Redirigiendo a Mercado Pago…","info",2000);
   const authUrl = `https://auth.mercadopago.com/authorization?client_id=${MP_APP_ID}&response_type=code&platform_id=mp&state=${state}&redirect_uri=${MP_REDIRECT}`;
   window.location.href = authUrl;
 }
@@ -1034,13 +1111,17 @@ document.addEventListener("click",ev=>{
   if(d.layout){s.layout=d.layout;applyLayoutDefaults(s,d.layout);commit(true);return;}
   if(d.preset){s.colors={...PRESETS[d.preset]};commit(true);return;}
   if(d.tpl){
-    if(!confirm("Se reemplazan estructura, estilo, textos y productos por el ejemplo de este rubro. ¿Seguir?"))return;
-    const tp=JSON.parse(JSON.stringify(TEMPLATES[d.tpl]));delete tp.n;
-    const sec=tp.sections||{};delete tp.sections;
-    Object.assign(s,tp);s.colors={...tp.colors};applyLayoutDefaults(s,tp.layout);
-    if(tp.heroAlign)s.heroAlign=tp.heroAlign;if(tp.heroH)s.heroH=tp.heroH;
-    if(tp.grad===undefined)s.grad=false;
-    Object.assign(s.sections,sec);commit(true);return;
+    UIConfirm({title:"Aplicar rubro",message:"Se reemplazan estructura, estilo, textos y productos por el ejemplo de este rubro. ¿Seguir?",confirmText:"Aplicar"}).then(ok=>{
+      if(!ok)return;
+      const tp=JSON.parse(JSON.stringify(TEMPLATES[d.tpl]));delete tp.n;
+      const sec=tp.sections||{};delete tp.sections;
+      Object.assign(s,tp);s.colors={...tp.colors};applyLayoutDefaults(s,tp.layout);
+      if(tp.heroAlign)s.heroAlign=tp.heroAlign;if(tp.heroH)s.heroH=tp.heroH;
+      if(tp.grad===undefined)s.grad=false;
+      Object.assign(s.sections,sec);commit(true);
+      UIToast("Rubro aplicado","ok");
+    });
+    return;
   }
   if(d.add){s[d.add].push(NEW_ITEM[d.add]());commit(true);return;}
   if(d.rm){const[a,i]=d.rm.split(":");s[a].splice(+i,1);commit(true);return;}
@@ -1050,7 +1131,14 @@ document.addEventListener("click",ev=>{
   if(d.upgal){$("fileGal").value="";$("fileGal").click();return;}
   if(d.clr){if(d.clr.startsWith("p:"))s.productos[+d.clr.slice(2)].img="";else s[d.clr]="";commit(true);return;}
   if(d.galrm!==undefined){s.gallery.splice(+d.galrm,1);commit(true);return;}
-  if(d.reset){if(!confirm("¿Restablecer \""+s.name+"\"? Se pierden sus datos."))return;DB.list[DB.cur]=newSite(s.name);commit(true);return;}
+  if(d.reset){
+  UIConfirm({title:"Restablecer proyecto",message:`¿Restablecer “${s.name}”? Se pierden sus datos.`,confirmText:"Restablecer",danger:true}).then(ok=>{
+    if(!ok)return;
+    DB.list[DB.cur]=newSite(s.name);commit(true);
+    UIToast("Proyecto restablecido","ok");
+  });
+  return;
+}
   if(d.dev){setDev(d.dev);return;}
 });
 
@@ -1066,14 +1154,21 @@ $("fileGal").addEventListener("change",ev=>{
 $("projSel").onchange=e=>{DB.cur=e.target.value;saveDB();histInit();renderPanel();renderPrev();};
 $("bNew").onclick=()=>{const n=prompt("Nombre del cliente/negocio:","Cliente "+(Object.keys(DB.list).length+1));if(!n)return;const id=uid();DB.list[id]=newSite(n);DB.cur=id;saveDB();histInit();renderProj();renderPanel();renderPrev();};
 $("bDup").onclick=()=>{const id=uid(),c=JSON.parse(JSON.stringify(S()));c.name+=" (copia)";DB.list[id]=c;DB.cur=id;saveDB();histInit();renderProj();renderPanel();renderPrev();};
-$("bDel").onclick=()=>{
+$("bDel").onclick=async()=>{
   const cur=S();if(!cur)return;
-  if(!confirm("¿Borrar \""+cur.name+"\"?"))return;
+  const ok=await UIConfirm({
+    title:"Borrar proyecto",
+    message:`¿Borrar “${cur.name}”? Se pierden sus datos locales. Esta acción no se puede deshacer.`,
+    confirmText:"Borrar",
+    danger:true
+  });
+  if(!ok)return;
   delete DB.list[DB.cur];
   const remaining=Object.keys(DB.list);
   if(remaining.length){DB.cur=remaining[0];}
   else{const id=uid();DB.list[id]=newSite("Cliente 1");DB.cur=id;}
   saveDB();histInit();renderProj();renderPanel();renderPrev();
+  UIToast("Proyecto borrado","ok");
 };
 $("bUndo").onclick=()=>histGo(-1);
 $("bRedo").onclick=()=>histGo(1);
@@ -1097,7 +1192,7 @@ $("bTab").onclick=()=>{
 $("bJson").onclick=()=>download(slug(S().name)+".webhub.json",JSON.stringify(S()),"application/json");
 $("bBackup").onclick=()=>download("webhub-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(DB),"application/json");
 $("bOpen").onclick=()=>$("fileJson").click();
-$("fileJson").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{
+$("fileJson").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{
   try{
     const raw=JSON.parse(r.result);
     const badUrl=u=>u&&typeof u==="string"&&!/^(https:\/\/|data:image\/)/.test(u);
@@ -1109,18 +1204,20 @@ $("fileJson").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new Fi
       return site;
     };
     const hasBad=site=>badUrl(site.hero)||badUrl(site.logo)||(site.gallery||[]).some(badUrl)||(site.productos||[]).some(p=>badUrl(p.img));
+    const confirmBad=()=>UIConfirm({title:"URLs no permitidas",message:"El archivo contiene URLs de imagen no permitidas. Se descartarán. ¿Continuar?",confirmText:"Continuar"});
     if(raw&&raw.list){
       let warned=false;
       for(const k in raw.list){
-        if(!warned&&hasBad(raw.list[k])){warned=true;if(!confirm("El archivo contiene URLs de imagen no permitidas. Se descartarán. ¿Continuar?"))return;}
+        if(!warned&&hasBad(raw.list[k])){warned=true;if(!(await confirmBad()))return;}
         const id=uid();DB.list[id]=sanitize(normalize(raw.list[k]));DB.cur=id;
       }
     }else{
-      if(hasBad(raw)){if(!confirm("El archivo contiene URLs de imagen no permitidas. Se descartarán. ¿Continuar?"))return;}
+      if(hasBad(raw)){if(!(await confirmBad()))return;}
       const id=uid();DB.list[id]=sanitize(normalize(raw));DB.cur=id;
     }
     saveDB();histInit();renderProj();renderPanel();renderPrev();
-  }catch(x){alert("Archivo inválido");}
+    UIToast("Proyecto importado","ok");
+  }catch(x){UIToast("Archivo inválido","err");}
   };r.readAsText(f);};
 
 function setDev(v){const w=$("pwrap"),fr=$("frame");if(v==="full"){w.classList.add("full");fr.style.width="";}else{w.classList.remove("full");fr.style.width=v+"px";}
@@ -1401,19 +1498,27 @@ async function mpRefresh(){
   if(tab==="pagos")renderPanel();
 }
 async function mpConnect(){
-  if(!cloudReady){alert("Iniciá sesión primero.");return;}
+  if(!cloudReady){UIToast("Iniciá sesión primero.","err");return;}
   const {data:{user}}=await supabaseClient.auth.getUser();
-  if(!user){alert("Tenés que iniciar sesión.");return;}
+  if(!user){UIToast("Tenés que iniciar sesión.","err");return;}
   const state=generarUUID();
   const {error}=await supabaseClient.from("wb_mp_states").insert({state,store_id:cloudStoreId,user_id:user.id,return_url:location.href.split("#")[0].split("?")[0]});
-  if(error){alert("No se pudo iniciar: "+error.message);return;}
+  if(error){UIToast("No se pudo iniciar: "+error.message,"err",6000);return;}
+  UIToast("Redirigiendo a Mercado Pago…","info",2000);
   location.href="https://auth.mercadopago.com/authorization?client_id="+MP_APP_ID+"&response_type=code&platform_id=mp&state="+state+"&redirect_uri="+encodeURIComponent(MP_REDIRECT);
 }
 async function mpDisconnect(){
-  if(!confirm("¿Desconectar Mercado Pago de este sitio?"))return;
+  const ok=await UIConfirm({
+    title:"Desconectar Mercado Pago",
+    message:"¿Desconectar Mercado Pago de este sitio? Los cobros dejarán de funcionar hasta que lo vuelvas a conectar.",
+    confirmText:"Desconectar",
+    danger:true
+  });
+  if(!ok)return;
   const {error}=await supabaseClient.rpc("wb_mp_disconnect",{p_store:cloudStoreId});
-  if(error){alert(error.message);return;}
+  if(error){UIToast(error.message,"err",6000);return;}
   MP.st="off";MP.id="";renderPanel();
+  UIToast("Mercado Pago desconectado","ok");
 }
 function drawPay(){
   const s=S();if(!s)return;const on=MP.st==="on";
@@ -1448,9 +1553,9 @@ document.addEventListener("click",async ev=>{
     if(sp.sec)Object.assign(s.sections,sp.sec);commit(true);return;
   }
   if(a==="copy"){const o={};KEYS.forEach(k=>o[k]=s[k]);const j=JSON.stringify(o);
-    try{await navigator.clipboard.writeText(j);alert("Estilo copiado.");}catch(e){prompt("Copiá este texto:",j);}return;}
+    try{await navigator.clipboard.writeText(j);UIToast("Estilo copiado","ok");}catch(e){prompt("Copiá este texto:",j);}return;}
   if(a==="paste"){const j=prompt("Pegá el estilo copiado:");if(!j)return;
-    try{const o=JSON.parse(j);KEYS.forEach(k=>{if(o[k]!==undefined)s[k]=o[k];});commit(true);}catch(e){alert("Estilo inválido.");}}
+    try{const o=JSON.parse(j);KEYS.forEach(k=>{if(o[k]!==undefined)s[k]=o[k];});commit(true);UIToast("Estilo aplicado","ok");}catch(e){UIToast("Estilo inválido","err");}}
 });
 
 /* ---------- el sitio generado: botón de pago ---------- */
@@ -1486,7 +1591,9 @@ buildSite=function(s){
 const q=new URLSearchParams(location.search),r=q.get("mp");
 if(r){
   tab="pagos";history.replaceState(null,"",location.pathname);
-  let n=0;const iv=setInterval(()=>{if(cloudReady){clearInterval(iv);renderTabs();mpRefresh();alert(r==="ok"?"¡Mercado Pago conectado!":"No se pudo conectar Mercado Pago. Probá de nuevo.");}else if(++n>60)clearInterval(iv);},500);
+  let n=0;const iv=setInterval(()=>{if(cloudReady){clearInterval(iv);renderTabs();mpRefresh();
+    UIToast(r==="ok"?"¡Mercado Pago conectado!":"No se pudo conectar Mercado Pago. Probá de nuevo.",r==="ok"?"ok":"err",6000);
+  }else if(++n>60)clearInterval(iv);},500);
 }
 renderTabs();renderPanel();renderPrev();
 }catch(err){console.error(err);alert("V4: "+err.message);}
@@ -1532,14 +1639,14 @@ function step(m){PUB.msg=m;if(tab==="publicar")drawPub();}
 
 async function publish(){
   if(PUB.busy)return;
-  if(typeof cloudReady==="undefined"||!cloudReady){alert("Iniciá sesión primero para publicar.");return;}
+  if(typeof cloudReady==="undefined"||!cloudReady){UIToast("Iniciá sesión primero para publicar.","err");return;}
   const s=S();PUB.busy=true;PUB.err="";
   try{
     step("Subiendo imágenes…");
-    const cfg=await prepareCloudConfig(JSON.parse(JSON.stringify(s)));   /* fotos a URLs, nada de base64 */
+    const cfg=await prepareCloudConfig(JSON.parse(JSON.stringify(s)));
     step("Generando la página…");
     let html=buildSite(normalize(cfg));
-    html=html.split("${SUPABASE_URL}").join(SUPABASE_URL);              /* red de seguridad */
+    html=html.split("${SUPABASE_URL}").join(SUPABASE_URL);
     if(html.length>4.5e6)throw new Error("La página pesa "+(html.length/1e6).toFixed(1)+" MB. Reducí fotos de la galería o del producto.");
     step("Publicando en GitHub…");
     const {data,error}=await supabaseClient.functions.invoke("publish-site",{body:{store_id:cloudStoreId,html}});
@@ -1547,15 +1654,23 @@ async function publish(){
     if(!data||!data.url)throw new Error("Respuesta inesperada del servidor.");
     s.pub={url:data.url,at:new Date().toISOString()};commit(false);
     PUB.msg="¡Listo! En 1 o 2 minutos ya se ve online.";
-  }catch(e){PUB.err=e.message||String(e);PUB.msg="";console.error("publish:",e);}
+    UIToast("¡Sitio publicado! En 1-2 min ya se ve online.","ok",6000);
+  }catch(e){PUB.err=e.message||String(e);PUB.msg="";console.error("publish:",e);UIToast("Error al publicar: "+(e.message||e),"err",7000);}
   PUB.busy=false;if(tab==="publicar")drawPub();
 }
 async function unpublish(){
-  if(!confirm("¿Sacar la web de internet? Podés volver a publicarla cuando quieras."))return;
+  const ok=await UIConfirm({
+    title:"Despublicar sitio",
+    message:"¿Sacar la web de internet? Podés volver a publicarla cuando quieras.",
+    confirmText:"Despublicar",
+    danger:true
+  });
+  if(!ok)return;
   PUB.busy=true;PUB.err="";step("Despublicando…");
   const {error}=await supabaseClient.functions.invoke("publish-site",{body:{store_id:cloudStoreId,action:"unpublish"}});
   PUB.busy=false;
-  if(error){PUB.err=await errOf(error);PUB.msg="";}else{const s=S();s.pub=null;commit(false);PUB.msg="La web ya no está online.";}
+  if(error){PUB.err=await errOf(error);PUB.msg="";UIToast("No se pudo despublicar: "+PUB.err,"err",7000);}
+  else{const s=S();s.pub=null;commit(false);PUB.msg="La web ya no está online.";UIToast("Sitio despublicado","ok");}
   drawPub();
 }
 
@@ -1566,7 +1681,7 @@ document.addEventListener("click",async ev=>{
   if(a==="go")return publish();
   if(a==="off")return unpublish();
   if(a==="open"&&s.pub)return void window.open(s.pub.url,"_blank");
-  if(a==="copy"&&s.pub){try{await navigator.clipboard.writeText(s.pub.url);alert("Link copiado.");}catch(e){prompt("Copiá el link:",s.pub.url);}}
+  if(a==="copy"&&s.pub){try{await navigator.clipboard.writeText(s.pub.url);UIToast("Link copiado","ok");}catch(e){prompt("Copiá el link:",s.pub.url);}}
 });
 
 renderTabs();renderPanel();
