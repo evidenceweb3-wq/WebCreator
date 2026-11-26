@@ -747,7 +747,20 @@ ${skinCss}`;
   const anim=s.animate?`<script>(function(){if(!("IntersectionObserver" in window))return;var t=document.querySelectorAll("section .card,section h2,.rvx");t.forEach(function(x){x.classList.add("rv")});var o=new IntersectionObserver(function(en){en.forEach(function(i){if(i.isIntersecting){i.target.classList.add("in");o.unobserve(i.target)}})},{threshold:.1});t.forEach(function(x){o.observe(x)})})()<\/script>`:"";
   const fav=encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${s.emoji||"✨"}</text></svg>`);
   const fxLayer=fxClass?`<div class="${fxClass}"></div>`:"";
-    const scriptMP = `<script>
+       const scriptMP = `<script>
+  (function(){
+    try{
+      var q=new URLSearchParams(location.search),st=q.get("status")||q.get("collection_status");
+      if(!st)return;
+      var ok=st==="approved",pend=st==="pending"||st==="in_process";
+      var t=document.createElement("div");
+      t.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:#0a1214;border:1px solid "+(ok?"#00e5a0":pend?"#ffb020":"#ff5c6e")+";border-radius:14px;padding:18px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);font-family:system-ui,sans-serif;max-width:92vw";
+      t.innerHTML='<img src="${MP_LOGO_URL}" style="height:40px;width:auto;display:block;margin:0 auto 8px"><div style="font-size:15px;font-weight:800;color:#e7ecf3">'+(ok?"¡Pago aceptado!":pend?"Pago pendiente":"El pago no se completó")+'</div><div style="font-size:12px;color:#a0abb9;margin-top:4px">'+(ok?"Gracias por tu compra.":pend?"Te avisamos cuando se acredite.":"Podés intentar de nuevo.")+'</div>';
+      document.body.appendChild(t);
+      setTimeout(function(){t.remove()},7000);
+      history.replaceState(null,"",location.pathname);
+    }catch(e){}
+  })();
   async function pagarConMP(storeId, index, btn){
     const txt=btn?btn.innerText:"";
     if(btn){btn.innerText="Procesando...";btn.disabled=true;}
@@ -759,10 +772,10 @@ ${skinCss}`;
       });
       const data=await res.json();
       if(data.init_point){
-  if(window.top===window){window.location.href=data.init_point;}
-  else{window.open(data.init_point,"_blank");}
-  return;
-}
+        if(window.top===window){window.location.href=data.init_point;}
+        else{window.open(data.init_point,"_blank");}
+        return;
+      }
       alert("Error: "+(data.error||"No se pudo generar el pago"));
     }catch(e){alert("Error de conexión con el servidor");}
     if(btn){btn.innerText=txt;btn.disabled=false;}
