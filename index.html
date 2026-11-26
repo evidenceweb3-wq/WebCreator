@@ -502,6 +502,7 @@ const newSite = (name="Mi Negocio") => ({
   galT:"Galería", testT:"Lo que dicen de nosotros", faqT:"Preguntas frecuentes", ctaT:"", contT:"Contacto",
   horarios:"Lun a Vie 9 a 18 hs\nSáb 9 a 13 hs", dir:"", wa:"", tel:"", ig:"", fb:"", tt:"", yt:"", mail:"", mp:"",
   mpCur:"ARS", mpCheckout:false, backUrl:"",
+showPayFooter:true,
   logo:"", hero:"", emoji:"✨",
   announce:{on:false,text:"🔥 Envíos gratis en compras mayores a $50.000",link:""},
   stickyHeader:true, navLinks:true, fab:{on:true,label:"WhatsApp",pos:"right"},
@@ -742,7 +743,13 @@ ${skinCss}`;
   const skip=bio?["prod","cta","pts"]:[];
   const mid=s.order.filter(k=>s.sections[k]&&!skip.includes(k)).map(k=>SM[k]()).join("");
   const ann=s.announce.on&&s.announce.text?`<div style="background:var(--acf);color:var(--ink);text-align:center;padding:9px 16px;font-weight:700;font-size:14px">${s.announce.link?`<a href="${e(s.announce.link)}" target="_blank" rel="noopener">${e(s.announce.text)}</a>`:e(s.announce.text)}</div>`:"";
-  const foot=`<footer class="mu">© ${new Date().getFullYear()} ${e(s.name)}</footer>`;
+  const foot=`
+<footer class="mu wh-site-footer">
+  <div class="wh-footer-copy">© ${new Date().getFullYear()} ${e(s.name)}</div>
+  ${s.showPayFooter!==false?'<div id="wh-payment-methods"></div>':""}
+</footer>
+${s.showPayFooter!==false?'<script src="./footer-pagos.js"></script>':""}
+`;
   const fab=(num&&s.fab.on)?`<a class="fab" href="${waMain}" target="_blank" rel="noopener">${e(s.fab.label||"WhatsApp")}</a>`:"";
   const anim=s.animate?`<script>(function(){if(!("IntersectionObserver" in window))return;var t=document.querySelectorAll("section .card,section h2,.rvx");t.forEach(function(x){x.classList.add("rv")});var o=new IntersectionObserver(function(en){en.forEach(function(i){if(i.isIntersecting){i.target.classList.add("in");o.unobserve(i.target)}})},{threshold:.1});t.forEach(function(x){o.observe(x)})})()<\/script>`:"";
   const fav=encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${s.emoji||"✨"}</text></svg>`);
@@ -1082,7 +1089,9 @@ ${s.faq.map((q,i)=>`<div class="prod"><div class="ph"><span class="sp"></span><b
 ${F("Link de pago manual (opcional)","mp",s.mp,"url","https://mpago.la/...")}`;
   }
   if(tab==="avanzado"){
-    h=`<div class="h">Barra de anuncio</div>${TOG("Mostrar barra arriba","announce.on",s.announce.on)}${F("Texto","announce.text",s.announce.text)}${F("Link (opcional)","announce.link",s.announce.link,"url")}
+    h=`<div class="h">Footer de medios de pago</div>
+${TOG("Mostrar logos de medios de pago en el footer","showPayFooter",s.showPayFooter!==false)}
+<p class="small">Activalo o desactivalo para cada sitio.</p><div class="h">Barra de anuncio</div>${TOG("Mostrar barra arriba","announce.on",s.announce.on)}${F("Texto","announce.text",s.announce.text)}${F("Link (opcional)","announce.link",s.announce.link,"url")}
 <div class="h">Encabezado</div>${TOG("Encabezado fijo al hacer scroll","stickyHeader",s.stickyHeader)}${TOG("Menú con links","navLinks",s.navLinks)}
 <div class="h">Botón flotante WhatsApp</div>${TOG("Mostrar","fab.on",s.fab.on)}${F("Texto","fab.label",s.fab.label)}${SEL("Posición","fab.pos",s.fab.pos,{right:"Derecha",left:"Izquierda"})}
 <div class="h">SEO (Google)</div>${F("Título de la pestaña","seoT",s.seoT,"text",s.name)}${T("Descripción","seoD",s.seoD,3)}
