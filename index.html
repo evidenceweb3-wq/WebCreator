@@ -263,6 +263,14 @@ button,select,input,textarea{font:inherit;color:inherit}
 .uimCard .acts .b{padding:10px 18px;font-size:14px}
 #uiModal .uimCard .b.pri.danger{background:var(--dng);border-color:var(--dng);color:#fff}
 #uiModal .uimCard .b.pri.danger:hover{background:#ff7584;border-color:#ff7584}
+#toastWrap.center{left:50%;right:auto;bottom:50%;transform:translate(-50%,50%);align-items:center;max-width:460px}
+#toastWrap.center .toast{animation:toastCenterIn .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes toastCenterIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.toast.epic{border-left-width:0;border:1px solid var(--ac);background:linear-gradient(180deg,#0d1a1e,#0a1214);padding:22px 26px 20px;text-align:center;flex-direction:column;gap:14px}
+.toast.epic .ico{font-size:52px;line-height:1;margin-bottom:2px;filter:drop-shadow(0 0 18px var(--ac))}
+.toast.epic .msg{font-size:15px;font-weight:700;max-width:100%;flex:0 0 auto}
+.toast.epic .sub{font-size:12.5px;color:var(--tx2);font-weight:500;margin-top:2px}
+.toast.epic .mp-logo{height:52px;width:auto;margin:0 auto;display:block}
 @media(max-width:520px){#toastWrap{left:20px;right:20px;max-width:none}.uimCard .acts .b{flex:1}}
 </style>
 <script>
@@ -312,6 +320,29 @@ window.UIConfirm=function(opts){
     m.classList.add("show");
     setTimeout(function(){no.focus();},50);
   });
+};
+window.MPToast=function(){
+  var wrap=document.getElementById("toastWrap");
+  if(!wrap){wrap=document.createElement("div");wrap.id="toastWrap";document.body.appendChild(wrap);}
+  wrap.classList.add("center");
+  var t=document.createElement("div");
+  t.className="toast epic";
+  t.innerHTML=
+    '<img class="mp-logo" src="'+MP_LOGO_URL+'" alt="Mercado Pago">'+
+    '<span class="ico">✅</span>'+
+    '<span class="msg">Mercado Pago conectado</span>'+
+    '<span class="sub">Ya podés cobrar en tu sitio. Los pagos caen directo en tu cuenta.</span>';
+  wrap.appendChild(t);
+  var remove=function(){
+    t.classList.add("out");
+    setTimeout(function(){
+      if(t.parentNode)t.parentNode.removeChild(t);
+      if(!wrap.children.length)wrap.classList.remove("center");
+    },300);
+  };
+  var timer=setTimeout(remove,6000);
+  t.addEventListener("click",function(){clearTimeout(timer);remove();});
+  return t;
 };
 </script>
 <!-- ============ /UI KIT ============ -->
@@ -738,6 +769,8 @@ ${skinCss}`;
 
 /* ================= STORAGE ================= */
 const SUPABASE_URL = "https://xlmcfasawbsrblwtxrgb.supabase.co";
+const MP_LOGO_URL = "https://i.postimg.cc/zvPz7v5k/CIHzw-Oj-Zs-I0DEAE.webp";
+const MP_BRAND_COLOR = "#009ee3";
 const SUPABASE_ANON_KEY = "sb_publishable_ywKS0a9KCBfEjFjErpJwpA_I6kLVSjZ";
 const MP_APP_ID = "2618196341026968"; // 👈 PONÉ TU CLIENT ID ACÁ (el número largo que vimos)
 const MP_REDIRECT = "https://xlmcfasawbsrblwtxrgb.supabase.co/functions/v1/mp-oauth";
@@ -1450,6 +1483,8 @@ css.textContent=`.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .q4 input:focus{outline:none;border-color:var(--ac)}
 .mpc{display:flex;align-items:center;gap:12px;border:1px solid var(--ln2);border-radius:14px;padding:14px;background:var(--bg)}
 .mpc .dot{width:12px;height:12px;border-radius:50%;background:var(--mut);flex-shrink:0}.mpc.on .dot{background:var(--ac);box-shadow:0 0 12px var(--ac)}
+.mpc .mp-logo-badge{flex-shrink:0;display:grid;place-items:center;width:44px;height:44px;border-radius:10px;background:#009ee3;padding:6px}
+.mpc .mp-logo-badge img{width:100%;height:100%;object-fit:contain}
 .mpb{background:#009ee3;border-color:#009ee3;color:#fff;font-weight:800}.mpb:hover{background:#27b2f0;border-color:#27b2f0}`;
 document.head.appendChild(css);
 
@@ -1490,6 +1525,33 @@ function refresh4(){const g=$("g4");if(g)g.innerHTML=grid4();}
 
 /* ---------- Mercado Pago ---------- */
 const MP={st:"?",id:""};
+function MPSuccessScreen(){
+  var el=document.createElement("div");
+  el.id="mpSuccessScreen";
+  el.style.cssText="position:fixed;inset:0;z-index:10001;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 0%,#0f1a1e,#04060a 70%);animation:mpFade .35s ease";
+  el.innerHTML=`
+    <style>
+      @keyframes mpFade{from{opacity:0}to{opacity:1}}
+      @keyframes mpPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+      #mpSuccessScreen .card{background:linear-gradient(180deg,#0d1a1e,#0a1214);border:1px solid var(--ac);border-radius:20px;padding:38px 34px;max-width:440px;text-align:center;box-shadow:0 30px 90px rgba(0,0,0,.7);animation:mpPop .45s cubic-bezier(.2,.8,.2,1)}
+      #mpSuccessScreen img{height:76px;width:auto;margin:0 auto 18px;display:block;filter:drop-shadow(0 0 24px rgba(0,229,160,.35))}
+      #mpSuccessScreen .check{font-size:52px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 0 18px var(--ac))}
+      #mpSuccessScreen h2{font-size:22px;margin-bottom:10px;color:var(--tx);font-weight:800}
+      #mpSuccessScreen p{font-size:13.5px;color:var(--tx2);line-height:1.5;margin-bottom:22px}
+      #mpSuccessScreen button{width:100%}
+    </style>
+    <div class="card">
+      <img src="${MP_LOGO_URL}" alt="Mercado Pago">
+      <div class="check">✅</div>
+      <h2>Mercado Pago conectado</h2>
+      <p>Ya podés cobrar en tu sitio. Los pagos caen directo en tu cuenta.</p>
+      <button class="b pri" onclick="this.closest('#mpSuccessScreen').remove()">Listo</button>
+    </div>`;
+  document.body.appendChild(el);
+  setTimeout(function(){
+    if(el.parentNode)el.remove();
+  },9000);
+}
 async function mpRefresh(){
   if(!cloudReady||!supabaseClient)return;
   const {data}=await supabaseClient.from("wb_stores").select("mp_user_id").eq("id",cloudStoreId).maybeSingle();
@@ -1522,8 +1584,9 @@ async function mpDisconnect(){
 }
 function drawPay(){
   const s=S();if(!s)return;const on=MP.st==="on";
-  $("panel").innerHTML=`<section class="ac open"><div class="ach" style="cursor:default"><span>Mercado Pago</span><em>${on?"conectado":MP.st==="off"?"sin conectar":"…"}</em></div><div class="acb">
-<div class="mpc ${on?"on":""}"><span class="dot"></span><div style="flex:1"><b>${on?"Cuenta conectada":"Cuenta no conectada"}</b><div class="small">${on?"ID de vendedor: "+esc(MP.id):"Autorizá a WebHub a cobrar por vos (OAuth). No compartís tu contraseña ni tus claves."}</div></div></div>
+const mpLogo = `<img src="${MP_LOGO_URL}" alt="Mercado Pago" style="height:34px;width:auto;display:block">`;
+$("panel").innerHTML=`<section class="ac open"><div class="ach" style="cursor:default"><span>Mercado Pago</span><em>${on?"conectado":MP.st==="off"?"sin conectar":"…"}</em></div><div class="acb">
+<div class="mpc ${on?"on":""}">${on?`<span class="mp-logo-badge">${mpLogo}</span>`:`<span class="dot"></span>`}<div style="flex:1"><b>${on?"Cuenta conectada":"Cuenta no conectada"}</b><div class="small">${on?"ID de vendedor: "+esc(MP.id):"Autorizá a WebHub a cobrar por vos (OAuth). No compartís tu contraseña ni tus claves."}</div></div></div>
 ${on?`<button class="b dng" data-act="mpoff">Desconectar</button>`:`<button class="b mpb" data-act="mpon">Conectar con Mercado Pago</button>`}
 </div></section>
 <section class="ac open"><div class="ach" style="cursor:default"><span>Cobro en la web</span></div><div class="acb">
@@ -1561,14 +1624,43 @@ document.addEventListener("click",async ev=>{
 /* ---------- el sitio generado: botón de pago ---------- */
 function __mp(c){
   var d=document;
-  d.querySelectorAll("[data-mp]").forEach(function(a){a.removeAttribute("target");if(a.classList.contains("btn"))a.textContent="Pagar con Mercado Pago";});
+  try{
+    if(sessionStorage.getItem("mp_pending")){
+      sessionStorage.removeItem("mp_pending");
+      var t=document.createElement("div");
+      t.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:linear-gradient(180deg,#0d1a1e,#0a1214);border:1px solid #00e5a0;border-radius:14px;padding:18px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);font-family:system-ui,sans-serif;max-width:92vw;animation:mpFade .3s ease";
+      t.innerHTML='<img src="'+MP_LOGO_URL+'" style="height:40px;width:auto;display:block;margin:0 auto 8px"><div style="font-size:15px;font-weight:800;color:#e7ecf3">¡Pago aceptado!</div><div style="font-size:12px;color:#a0abb9;margin-top:4px">Gracias por tu compra.</div>';
+      document.body.appendChild(t);
+      setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},6000);
+    }
+  }catch(e){}
+  d.querySelectorAll("[data-mp]").forEach(function(a){
+  a.removeAttribute("target");
+  if(a.classList.contains("btn")){
+    a.innerHTML='<img src="'+MP_LOGO_URL+'" alt="" style="height:18px;width:auto;vertical-align:middle;margin-right:8px">Pagar con Mercado Pago';
+    a.style.background=MP_BRAND_COLOR;
+    a.style.color="#fff";
+    a.style.borderColor=MP_BRAND_COLOR;
+    a.style.fontWeight="800";
+    a.style.display="inline-flex";
+    a.style.alignItems="center";
+  }
+});
   d.addEventListener("click",function(e){
     var a=e.target.closest("[data-mp]");if(!a)return;
     e.preventDefault();e.stopImmediatePropagation();a.style.opacity=.6;
     fetch(c.fn,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store_id:c.s,index:+a.dataset.mp})})
     .then(function(r){return r.json();})
-    .then(function(j){a.style.opacity="";if(!j.init_point){alert(j.error||"No se pudo iniciar el pago.");return;}
-      if(window.top===window)location.href=j.init_point;else window.open(j.init_point,"_blank");})
+    .then(function(j){
+  a.style.opacity="";
+  if(!j.init_point){alert(j.error||"No se pudo iniciar el pago.");return;}
+  if(window.top===window){
+    try{sessionStorage.setItem("mp_pending","1");}catch(e){}
+    location.href=j.init_point;
+  }else{
+    window.open(j.init_point,"_blank");
+  }
+})
     .catch(function(){a.style.opacity="";alert("Error de conexión.");});
   },true);
 }
@@ -1592,7 +1684,8 @@ const q=new URLSearchParams(location.search),r=q.get("mp");
 if(r){
   tab="pagos";history.replaceState(null,"",location.pathname);
   let n=0;const iv=setInterval(()=>{if(cloudReady){clearInterval(iv);renderTabs();mpRefresh();
-    UIToast(r==="ok"?"¡Mercado Pago conectado!":"No se pudo conectar Mercado Pago. Probá de nuevo.",r==="ok"?"ok":"err",6000);
+    if(r==="ok"){MPSuccessScreen();MPToast();}
+    else{UIToast("No se pudo conectar Mercado Pago. Probá de nuevo.","err",6000);}
   }else if(++n>60)clearInterval(iv);},500);
 }
 renderTabs();renderPanel();renderPrev();
