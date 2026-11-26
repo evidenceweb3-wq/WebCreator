@@ -1066,7 +1066,15 @@ $("fileGal").addEventListener("change",ev=>{
 $("projSel").onchange=e=>{DB.cur=e.target.value;saveDB();histInit();renderPanel();renderPrev();};
 $("bNew").onclick=()=>{const n=prompt("Nombre del cliente/negocio:","Cliente "+(Object.keys(DB.list).length+1));if(!n)return;const id=uid();DB.list[id]=newSite(n);DB.cur=id;saveDB();histInit();renderProj();renderPanel();renderPrev();};
 $("bDup").onclick=()=>{const id=uid(),c=JSON.parse(JSON.stringify(S()));c.name+=" (copia)";DB.list[id]=c;DB.cur=id;saveDB();histInit();renderProj();renderPanel();renderPrev();};
-$("bDel").onclick=()=>{if(!confirm("¿Borrar \""+S().name+"\"?"))return;delete DB.list[DB.cur];loadDB();saveDB();histInit();renderProj();renderPanel();renderPrev();};
+$("bDel").onclick=()=>{
+  const cur=S();if(!cur)return;
+  if(!confirm("¿Borrar \""+cur.name+"\"?"))return;
+  delete DB.list[DB.cur];
+  const remaining=Object.keys(DB.list);
+  if(remaining.length){DB.cur=remaining[0];}
+  else{const id=uid();DB.list[id]=newSite("Cliente 1");DB.cur=id;}
+  saveDB();histInit();renderProj();renderPanel();renderPrev();
+};
 $("bUndo").onclick=()=>histGo(-1);
 $("bRedo").onclick=()=>histGo(1);
 document.addEventListener("keydown",ev=>{
