@@ -748,7 +748,7 @@ ${skinCss}`;
   <div class="wh-footer-copy">© ${new Date().getFullYear()} ${e(s.name)}</div>
   ${s.showPayFooter!==false?'<div id="wh-payment-methods"></div>':""}
 </footer>
-${s.showPayFooter!==false?'<script src="./footer-pagos.js"></script>':""}
+${s.showPayFooter!==false?'<script src="./footer-pagos.js"><\/script>':""}
 `;
   const fab=(num&&s.fab.on)?`<a class="fab" href="${waMain}" target="_blank" rel="noopener">${e(s.fab.label||"WhatsApp")}</a>`:"";
   const anim=s.animate?`<script>(function(){if(!("IntersectionObserver" in window))return;var t=document.querySelectorAll("section .card,section h2,.rvx");t.forEach(function(x){x.classList.add("rv")});var o=new IntersectionObserver(function(en){en.forEach(function(i){if(i.isIntersecting){i.target.classList.add("in");o.unobserve(i.target)}})},{threshold:.1});t.forEach(function(x){o.observe(x)})})()<\/script>`:"";
