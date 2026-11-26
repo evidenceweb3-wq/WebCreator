@@ -743,12 +743,18 @@ ${skinCss}`;
   const skip=bio?["prod","cta","pts"]:[];
   const mid=s.order.filter(k=>s.sections[k]&&!skip.includes(k)).map(k=>SM[k]()).join("");
   const ann=s.announce.on&&s.announce.text?`<div style="background:var(--acf);color:var(--ink);text-align:center;padding:9px 16px;font-weight:700;font-size:14px">${s.announce.link?`<a href="${e(s.announce.link)}" target="_blank" rel="noopener">${e(s.announce.text)}</a>`:e(s.announce.text)}</div>`:"";
-const PAY_LOGOS=`<div style="margin-top:24px;padding-top:22px;border-top:1px solid color-mix(in srgb,var(--tx) 10%,transparent);display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;letter-spacing:.2px;opacity:.78">
-<span style="display:inline-flex;align-items:center;gap:7px">
-<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-Compra segura a través de
-</span>
-<img src="${MP_LOGO_URL}" alt="Mercado Pago" style="height:17px;width:auto;display:inline-block;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--ac) 35%,transparent))">
+const PAY_LOGOS=`<div style="margin-top:22px;padding-top:20px;border-top:1px solid color-mix(in srgb,var(--tx) 12%,transparent);display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;color:inherit">
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:13px;line-height:1.5;padding:0 10px;opacity:.85">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+<span>Compra segura a través de</span>
+<img src="${MP_LOGO_URL}" alt="Mercado Pago" style="height:15px;width:auto;display:inline-block;vertical-align:middle;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--ac) 30%,transparent))">
+</div>
+<div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;padding:0 6px;max-width:100%">
+<span style="background:#1a1f71;color:#fff;padding:5px 9px;border-radius:5px;font:800 10px/1.2 system-ui;letter-spacing:.5px;white-space:nowrap">VISA</span>
+<span style="background:#eb001b;color:#fff;padding:5px 9px;border-radius:5px;font:800 10px/1.2 system-ui;white-space:nowrap">mastercard</span>
+<span style="background:#006fcf;color:#fff;padding:5px 9px;border-radius:5px;font:800 10px/1.2 system-ui;letter-spacing:.5px;white-space:nowrap">AMEX</span>
+<span style="background:#009ee3;color:#fff;padding:5px 9px;border-radius:5px;font:800 10px/1.2 system-ui;white-space:nowrap">Mercado Pago</span>
+</div>
 </div>`;
 const foot=`
 <footer class="mu wh-site-footer">
