@@ -1832,7 +1832,13 @@ let html=buildSite(normalize(cfg));
 html=html.split("${SUPABASE_URL}").join(SUPABASE_URL);
     if(html.length>4.5e6)throw new Error("La página pesa "+(html.length/1e6).toFixed(1)+" MB. Reducí fotos de la galería o del producto.");
     step("Publicando en GitHub…");
-    const {data,error}=await supabaseClient.functions.invoke("publish-site",{body:{store_id:cloudStoreId,html}});
+    const {data,error}=await supabaseClient.functions.invoke("publish-site",{
+  body:{
+    store_id:cloudStoreId,
+    html,
+    store_name:String(s.name || "").trim()
+  }
+});
     if(error)throw new Error(await errOf(error));
     if(!data||!data.url)throw new Error("Respuesta inesperada del servidor.");
     if(!s.backUrl){
