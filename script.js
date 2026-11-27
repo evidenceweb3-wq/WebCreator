@@ -231,7 +231,7 @@ const newSite = (name="Mi Negocio") => ({
   font:"moderna", radius:"suave", colors:{...PRESETS.neon}, grad:false,
   headScale:100, ls:0, upper:false, btnStyle:"solid", cardStyle:"border", spacing:"normal", width:"normal",
   heroAlign:"center", heroH:"medio", overlay:55, animate:true,
-  grain:false, titleGrad:false, fx:"none",
+  grain:false, titleGrad:false, fx:"none", mo:"soft",
   kicker:"", tagline:"Lo mejor de tu zona, directo a tu puerta", cta:"Pedir por WhatsApp",
   points:["Envíos a todo el país","Calidad garantizada","Atención personalizada"],
   prodT:"Nuestros productos", aboutT:"Quiénes somos",
