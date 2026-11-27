@@ -6,7 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>WebHub PRO · Constructor de webs</title>
+<title>TiendaOnline · Constructor de tiendas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Montserrat:ital,wght@1,800;1,900&display=swap">
 <link rel="stylesheet" href="styles.css">
 <script>
 /* Anti-cache: borrar localStorage viejo de la app (no toca sb-* de Supabase) */
@@ -22,10 +23,29 @@
 <body>
 
 <div class="top">
-  <span class="logo">WEBHUB<small>PRO</small></span>
+  <span class="logo">
+    <svg class="cart" viewBox="0 0 70 50" aria-hidden="true">
+      <defs>
+        <linearGradient id="cft" x1="0" x2="1">
+          <stop offset="0" stop-color="#0a5cff" stop-opacity="0"/>
+          <stop offset="1" stop-color="#3db4ff"/>
+        </linearGradient>
+        <linearGradient id="cgt" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#0a5cff"/>
+          <stop offset="1" stop-color="#9ae3ff"/>
+        </linearGradient>
+      </defs>
+      <path d="M1 12h17M5 20h14M9 28h11" stroke="url(#cft)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M22 6h7l5 27h24l5-19H30" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="38" cy="43" r="4.2" fill="#fff"/>
+      <circle cx="54" cy="43" r="4.2" fill="#fff"/>
+      <path d="M22 34c-1 5-5 7-9 12 6-1 11-3 13-8 .5-1.7-.2-3.2-1.5-4.2-.6.5-1.6.2-2.5.2z" fill="url(#cgt)"/>
+    </svg>
+    <span class="wm">Tienda<b>Online</b></span>
+  </span>
   <select id="projSel" title="Proyecto actual"></select>
   <div class="vsep"></div>
-  <button class="b" id="bNew" title="Nuevo proyecto">+ Nuevo</button>
+  <button class="b" id="bNew" title="Nuevo proyecto">+</button>
   <button class="b ghost" id="bDup" title="Duplicar">Duplicar</button>
   <button class="b ghost dng" id="bDel" title="Borrar">Borrar</button>
   <div class="vsep"></div>
@@ -40,8 +60,33 @@
 
 <div id="authGate" class="show">
   <div class="authCard">
-    <h2>WEBHUB PRO</h2>
-    <p class="sub">Ingresá para guardar tus sitios en la nube y acceder desde cualquier dispositivo.</p>
+    <div class="brand">
+      <svg class="cart" viewBox="0 0 70 50" aria-hidden="true">
+        <defs>
+          <linearGradient id="cfa" x1="0" x2="1">
+            <stop offset="0" stop-color="#0a5cff" stop-opacity="0"/>
+            <stop offset="1" stop-color="#3db4ff"/>
+          </linearGradient>
+          <linearGradient id="cga" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stop-color="#0a5cff"/>
+            <stop offset="1" stop-color="#9ae3ff"/>
+          </linearGradient>
+        </defs>
+        <path d="M1 12h17M5 20h14M9 28h11" stroke="url(#cfa)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M22 6h7l5 27h24l5-19H30" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="38" cy="43" r="4.2" fill="#fff"/>
+        <circle cx="54" cy="43" r="4.2" fill="#fff"/>
+        <path d="M22 34c-1 5-5 7-9 12 6-1 11-3 13-8 .5-1.7-.2-3.2-1.5-4.2-.6.5-1.6.2-2.5.2z" fill="url(#cga)"/>
+      </svg>
+      <span class="wm">Tienda<b>Online</b></span>
+    </div>
+    <p class="sub"><span>DE CERO A TU TIENDA ONLINE, <b>SIN COMPLICACIONES.</b></span></p>
+    <div class="sol">
+      <i></i>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#f6b40e" stroke-width="4" stroke-dasharray="1.8 1.85"/><circle cx="12" cy="12" r="5.5" fill="#f6b40e"/></svg>
+      <i></i>
+    </div>
+    <p class="sub" style="font-style:normal;letter-spacing:0;font-weight:500;margin:10px 0 18px">Ingresá para guardar tus tiendas en la nube y editarlas desde cualquier dispositivo.</p>
     <label class="authField">Email<input id="authEmail" type="email" autocomplete="email" placeholder="tu@email.com"></label>
     <label class="authField">Contraseña<input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres"></label>
     <div class="authActions">
