@@ -838,19 +838,19 @@ let DB={cur:null,list:{}};
 const uid=()=>Math.random().toString(36).slice(2,8);
 
 function loadDB(){
-  try{
-    const r=JSON.parse(localStorage.getItem("webhub_v2")||"null");
-    if(r&&r.list&&Object.keys(r.list).length){DB={cur:r.cur,list:{}};for(const k in r.list)DB.list[k]=normalize(r.list[k]);}
-    else{
-      const o=JSON.parse(localStorage.getItem("webhub_v1")||"null");
-      if(o&&o.list&&Object.keys(o.list).length){DB={cur:o.cur,list:{}};for(const k in o.list)DB.list[k]=normalize(o.list[k]);}
-    }
-  }catch(e){}
-  if(!DB.cur||!DB.list[DB.cur]){const ks=Object.keys(DB.list);if(ks.length)DB.cur=ks[0];else{const id=uid();DB={cur:id,list:{[id]:newSite("Cliente 1")}};}}
+  // Always start with a fresh, empty workspace.
+  // Real data comes from the cloud AFTER login (loadOrCreateCloudStore).
+  DB = { cur: null, list: {} };
+  const id = uid();
+  DB.list[id] = newSite("Cliente 1");
+  DB.cur = id;
 }
 let warned=false;
+function lsKey(){
+  return cloudUser ? ("webhub_v2_" + cloudUser.id) : "webhub_v2_guest";
+}
 function saveDB(){
-  try{localStorage.setItem("webhub_v2",JSON.stringify(DB));}
+  try{localStorage.setItem(lsKey(), JSON.stringify(DB));}
   catch(e){if(!warned){warned=true;UIToast("Se llenó la memoria del navegador. Descargá el proyecto con 'Guardar .json' para no perderlo.","err",8000);}}
   scheduleCloudSave();
 }
@@ -900,9 +900,19 @@ async function saveCloudConfig(){
   if(JSON.stringify(S())!==JSON.stringify(snapshot))scheduleCloudSave();
 }
 async function loadOrCreateCloudStore(user){
+  // 1. Capture the local "pending" name in case this is a brand-new user
+  const pendingName = (S()?.name || "Mi negocio").trim();
+
+  // 2. Wipe any state left over from a previous user on this browser
+  DB = { cur: null, list: {} };
+  localStorage.removeItem("webhub_v2");
+  localStorage.removeItem("webhub_v2_guest");
+
+  // 3. Load only this user's stores
   setCloudStatus("Cargando tienda…");
   const {data:members,error:memberError}=await supabaseClient.from("wb_store_members").select("store_id").eq("user_id",user.id);
   if(memberError)throw memberError;
+
   let store=null;
   if(members?.length){
     const ids=members.map(x=>x.store_id);
@@ -910,33 +920,39 @@ async function loadOrCreateCloudStore(user){
     if(storeError)throw storeError;
     store=stores?.[0]||null;
   }
+
+  // 4. Create a store for first-time users
   if(!store){
-    
-const base=(S()?.name||"Mi negocio").trim();
+    const base=pendingName||"Mi negocio";
+    const safeSlug=base.toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-z0-9]+/g,"-")
+      .replace(/^-|-$/g,"")
+      .slice(0,42)
+      .replace(/-+$/g,"")||"mi-negocio";
 
-const safeSlug=base.toLowerCase()
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g,"")
-  .replace(/[^a-z0-9]+/g,"-")
-  .replace(/^-|-$/g,"")
-  .slice(0,42)
-  .replace(/-+$/g,"")||"mi-negocio";
-
-const uniqueSlug=safeSlug;
-
-    const {data:newId,error:createError}=await supabaseClient.rpc("wb_create_store",{p_name:base,p_slug:uniqueSlug});
+    const {data:newId,error:createError}=await supabaseClient.rpc("wb_create_store",{p_name:base,p_slug:safeSlug});
     if(createError)throw createError;
-    store={id:newId,name:base,slug:uniqueSlug,status:"draft"};
+    store={id:newId,name:base,slug:safeSlug,status:"draft"};
   }
+
+  // 5. Load the site config for that store
   cloudStoreId=store.id;
   const {data:cfg,error:configError}=await supabaseClient.from("wb_site_configs").select("config,version").eq("store_id",store.id).maybeSingle();
   if(configError)throw configError;
+
   const remote=cfg?.config;
-  if(remote&&typeof remote==="object"&&!Array.isArray(remote)&&Object.keys(remote).length){DB.list[store.id]=normalize(remote);}
-  else{DB.list[store.id]=normalize(S());}
+  if(remote&&typeof remote==="object"&&!Array.isArray(remote)&&Object.keys(remote).length){
+    DB.list[store.id]=normalize(remote);
+  }else{
+    // No remote config yet → seed from a clean default, NOT from another user's leftovers
+    DB.list[store.id]=newSite(store.name||"Mi negocio");
+  }
   DB.cur=store.id;
   cloudReady=true;
   renderProj();renderPanel();renderPrev();
+
   if(!remote||!Object.keys(remote||{}).length)await saveCloudConfig();
   else setCloudStatus("Conectado · "+store.name);
   return store;
@@ -962,10 +978,25 @@ async function initCloudAuth(){
   if(data.session)await finishCloudLogin(data.session);
   else{showAuth(true);setAuthMessage("Iniciá sesión o creá tu cuenta para continuar.");setCloudStatus("Sin iniciar sesión");}
   supabaseClient.auth.onAuthStateChange((event,session)=>{
-    if(event==="SIGNED_IN"&&session){setTimeout(()=>finishCloudLogin(session),0);}
-    if(event==="SIGNED_OUT"){cloudReady=false;cloudUser=null;cloudStoreId=null;document.getElementById("bSignOut").style.display="none";showAuth(true);setCloudStatus("Sesión cerrada");setAuthMessage("Iniciá sesión o creá tu cuenta para continuar.");}
+    if(event==="SIGNED_IN"&&session){
+      setTimeout(()=>finishCloudLogin(session),0);
+    }
+    if(event==="SIGNED_OUT"){
+      cloudReady=false;
+      cloudUser=null;
+      cloudStoreId=null;
+      cloudLoadingUserId=null;
+      DB={cur:null,list:{}};
+      localStorage.removeItem("webhub_v2");
+      localStorage.removeItem("webhub_v2_guest");
+      document.getElementById("bSignOut").style.display="none";
+      showAuth(true);
+      setCloudStatus("Sesión cerrada");
+      setAuthMessage("Iniciá sesión o creá tu cuenta para continuar.");
+    }
   });
 }
+
 async function authAction(mode){
   if(!supabaseClient){setAuthMessage("Supabase todavía está cargando.",true);return;}
   const email=document.getElementById("authEmail").value.trim();
