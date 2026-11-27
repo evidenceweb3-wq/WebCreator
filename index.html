@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>WebHub PRO · Constructor de webs</title>
 <style>
 :root{
@@ -183,6 +186,16 @@ button,select,input,textarea{font:inherit;color:inherit}
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* Anti-cache: borrar localStorage viejo de la app (no toca sb-* de Supabase) */
+(function killLegacyState(){
+  try{
+    Object.keys(localStorage)
+      .filter(k => k.startsWith("webhub"))
+      .forEach(k => localStorage.removeItem(k));
+  }catch(e){ console.warn("killLegacyState", e); }
+})();
+</script>
 
 <div class="top">
   <span class="logo">WEBHUB<small>PRO</small></span>
@@ -664,7 +677,7 @@ ${skinCss}`;
   const pbtn=(p, index)=>{
   if(p.link) return `<a class="btn sm" href="${e(p.link)}" target="_blank" rel="noopener">Comprar</a>`;
   if(p.p && p.p.toLowerCase().includes("gratis")) return `<a class="btn sm" href="${wa("Hola! Quiero info de: "+p.n)}" target="_blank" rel="noopener">Consultar</a>`;
-  return `<button class="btn sm" onclick="pagarConMP('${cloudStoreId||DB.cur}', ${index}, this)">Comprar</button>`;
+  return `<button class="btn sm" onclick="pagarConMP('${DB.cur}', ${index}, this)">Comprar</button>`;
 };
   const badge=p=>p.badge?`<span style="position:absolute;top:10px;left:10px;background:var(--acf);color:var(--ink);font-size:12px;font-weight:800;padding:4px 10px;border-radius:var(--br)">${e(p.badge)}</span>`:"";
   const priceH=p=>`<span class="pr">${p.old?`<s class="mu" style="font-weight:400;font-size:.8em;margin-right:6px">${e(p.old)}</s>`:""}${e(p.p)}</span>`;
@@ -889,6 +902,8 @@ async function prepareCloudConfig(config){
 async function saveCloudConfig(){
   if(!cloudReady||!supabaseClient||!cloudStoreId||!cloudUser||cloudBusy)return;
   const current=S();if(!current)return;
+  // Guardia: nunca guardar si el store activo no coincide (evita contaminación cruzada)
+  if(cloudStoreId !== DB.cur){console.error("saveCloudConfig: store mismatch", {cloudStoreId, cur: DB.cur}); return;}
   cloudBusy=true;setCloudStatus("Guardando…");
   let snapshot;
   try{snapshot=await prepareCloudConfig(JSON.parse(JSON.stringify(current)));}
@@ -905,20 +920,38 @@ async function loadOrCreateCloudStore(user){
 
   // 2. Wipe any state left over from a previous user on this browser
   DB = { cur: null, list: {} };
-  localStorage.removeItem("webhub_v2");
-  localStorage.removeItem("webhub_v2_guest");
+  cloudStoreId = null;
+  cloudReady = false;
+  Object.keys(localStorage)
+    .filter(k => k.startsWith("webhub"))
+    .forEach(k => localStorage.removeItem(k));
 
   // 3. Load only this user's stores
   setCloudStatus("Cargando tienda…");
-  const {data:members,error:memberError}=await supabaseClient.from("wb_store_members").select("store_id").eq("user_id",user.id);
+  const {data:members,error:memberError}=await supabaseClient
+    .from("wb_store_members")
+    .select("store_id")
+    .eq("user_id",user.id);
   if(memberError)throw memberError;
 
   let store=null;
   if(members?.length){
     const ids=members.map(x=>x.store_id);
-    const {data:stores,error:storeError}=await supabaseClient.from("wb_stores").select("id,name,slug,status,mp_user_id").in("id",ids).order("created_at",{ascending:true});
-    if(storeError)throw storeError;
-    store=stores?.[0]||null;
+    const {data:stores,error:storeError}=await supabaseClient
+      .from("wb_stores")
+      .select("id,name,slug,status,mp_user_id")
+      .in("id",ids)
+      .order("created_at",{ascending:true});
+
+    if(!storeError && stores?.length){
+      // Preferir la tienda donde soy owner
+      store = stores.find(s=>s.id===members[0].store_id) || stores[0];
+    }
+    // Si wb_stores falla (sin grant), fallback: usar datos mínimos de members
+    if(!store){
+      store = { id: members[0].store_id, name: pendingName || "Mi negocio",
+                slug: "", status: "draft", mp_user_id: null };
+    }
   }
 
   // 4. Create a store for first-time users
@@ -982,18 +1015,19 @@ async function initCloudAuth(){
       setTimeout(()=>finishCloudLogin(session),0);
     }
     if(event==="SIGNED_OUT"){
-      cloudReady=false;
-      cloudUser=null;
-      cloudStoreId=null;
-      cloudLoadingUserId=null;
-      DB={cur:null,list:{}};
-      localStorage.removeItem("webhub_v2");
-      localStorage.removeItem("webhub_v2_guest");
-      document.getElementById("bSignOut").style.display="none";
-      showAuth(true);
-      setCloudStatus("Sesión cerrada");
-      setAuthMessage("Iniciá sesión o creá tu cuenta para continuar.");
-    }
+  cloudReady=false;
+  cloudUser=null;
+  cloudStoreId=null;
+  cloudLoadingUserId=null;
+  DB={cur:null,list:{}};
+  Object.keys(localStorage)
+    .filter(k => k.startsWith("webhub"))
+    .forEach(k => localStorage.removeItem(k));
+  document.getElementById("bSignOut").style.display="none";
+  showAuth(true);
+  setCloudStatus("Sesión cerrada");
+  setAuthMessage("Iniciá sesión o creá tu cuenta para continuar.");
+}
   });
 }
 
