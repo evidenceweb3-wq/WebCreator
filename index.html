@@ -911,9 +911,19 @@ async function loadOrCreateCloudStore(user){
     store=stores?.[0]||null;
   }
   if(!store){
-    const base=(S()?.name||"Mi negocio").trim();
-    const safeSlug=base.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,42)||"mi-negocio";
-    const uniqueSlug=safeSlug+"-"+Math.random().toString(36).slice(2,7);
+    
+const base=(S()?.name||"Mi negocio").trim();
+
+const safeSlug=base.toLowerCase()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,"")
+  .replace(/[^a-z0-9]+/g,"-")
+  .replace(/^-|-$/g,"")
+  .slice(0,42)
+  .replace(/-+$/g,"")||"mi-negocio";
+
+const uniqueSlug=safeSlug;
+
     const {data:newId,error:createError}=await supabaseClient.rpc("wb_create_store",{p_name:base,p_slug:uniqueSlug});
     if(createError)throw createError;
     store={id:newId,name:base,slug:uniqueSlug,status:"draft"};
@@ -1545,7 +1555,15 @@ document.head.appendChild(css);
 
 /* ---------- galería unificada ---------- */
 let F4="Todos",Q4="";
-const KEYS=["layout","skin","nav","prod","test","steps","font","radius","spacing","cardStyle","upper","headScale","ls","grad","btnStyle","grain","titleGrad","fx","animate","mo","colors","width","heroAlign","heroH","overlay"];
+const KEYS=[
+  "layout","skin","nav","prod","test","steps",
+  "font","radius","spacing","cardStyle","upper",
+  "headScale","ls","grad","btnStyle","grain",
+  "titleGrad","fx","animate","mo","colors",
+  "width","heroAlign","heroH","overlay",
+  "mpCheckout","mpCur","mp","backUrl",
+  "showPayFooter","showSecureFooter"
+];
 const SEG4=(l,k,v,o)=>`<div class="f"><span>${l}</span><div class="seg">${Object.entries(o).map(([a,b])=>`<button data-set="${k}|${a}" class="${a===v?"on":""}">${b}</button>`).join("")}</div></div>`;
 function items(){
   const o=[];
@@ -1615,14 +1633,16 @@ async function mpRefresh(){
   if(tab==="pagos")renderPanel();
 }
 async function mpConnect(){
-  if(!cloudReady){UIToast("Iniciá sesión primero.","err");return;}
-  const {data:{user}}=await supabaseClient.auth.getUser();
-  if(!user){UIToast("Tenés que iniciar sesión.","err");return;}
-  const state=generarUUID();
-  const {error}=await supabaseClient.from("wb_mp_states").insert({state,store_id:cloudStoreId,user_id:user.id,return_url:location.href.split("#")[0].split("?")[0]});
-  if(error){UIToast("No se pudo iniciar: "+error.message,"err",6000);return;}
-  UIToast("Redirigiendo a Mercado Pago…","info",2000);
-  location.href="https://auth.mercadopago.com/authorization?client_id="+MP_APP_ID+"&response_type=code&platform_id=mp&state="+state+"&redirect_uri="+encodeURIComponent(MP_REDIRECT);
+  if(!cloudReady || !cloudStoreId){
+    UIToast("Iniciá sesión y seleccioná tu tienda.","err");
+    return;
+  }
+
+  if(typeof conectarMercadoPago==="function"){
+    return conectarMercadoPago(cloudStoreId);
+  }
+
+  UIToast("No se encontró la función de conexión Mercado Pago.","err");
 }
 async function mpDisconnect(){
   const ok=await UIConfirm({
@@ -1650,9 +1670,27 @@ ${SEL("Moneda","mpCur",s.mpCur||"ARS",{ARS:"Peso argentino (ARS)",USD:"Dólar (U
 <p class="small">El monto se toma del campo Precio de cada producto (ej. "$18.000" → 18000). Los productos con "Link de pago" siguen usando ese link.</p>
 ${F("URL de vuelta tras el pago","backUrl",s.backUrl,"url","https://tu-dominio.com/gracias")}
 ${F("Link manual de Mercado Pago (alternativa)","mp",s.mp,"url","https://mpago.la/...")}</div></section>
-<section class="ac open"><div class="ach" style="cursor:default"><span>Sello de compra segura</span><em>${s.showPayFooter!==false?"visible":"oculto"}</em></div><div class="acb">
-${TOG("Mostrar «Compra segura a través de Mercado Pago» en el footer","showPayFooter",s.showPayFooter!==false)}
-<p class="small">Sello limpio con candado + logo MP al pie del sitio. Refuerza la confianza. No afecta los cobros.</p></div></section>`;
+<section class="ac open">
+  <div class="ach" style="cursor:default">
+    <span>Footer y confianza</span>
+    <em>Personalizable</em>
+  </div>
+  <div class="acb">
+    ${TOG(
+      "Mostrar logos de medios de pago",
+      "showPayFooter",
+      s.showPayFooter!==false
+    )}
+    <p class="small">Visa, Mastercard, American Express y otros medios de pago.</p>
+
+    ${TOG(
+      "Mostrar sello de compra segura",
+      "showSecureFooter",
+      s.showSecureFooter===true
+    )}
+    <p class="small">Activa o desactiva el sello de compra segura de Mercado Pago.</p>
+  </div>
+</section>`;
 }
 
 /* ---------- render ---------- */
@@ -1682,16 +1720,6 @@ document.addEventListener("click",async ev=>{
 /* ---------- el sitio generado: botón de pago ---------- */
 function __mp(c){
   var d=document;
-  try{
-    if(sessionStorage.getItem("mp_pending")){
-      sessionStorage.removeItem("mp_pending");
-      var t=document.createElement("div");
-      t.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:linear-gradient(180deg,#0d1a1e,#0a1214);border:1px solid #00e5a0;border-radius:14px;padding:18px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);font-family:system-ui,sans-serif;max-width:92vw;animation:mpFade .3s ease";
-      t.innerHTML='<img src="'+MP_LOGO_URL+'" style="height:40px;width:auto;display:block;margin:0 auto 8px"><div style="font-size:15px;font-weight:800;color:#e7ecf3">¡Pago aceptado!</div><div style="font-size:12px;color:#a0abb9;margin-top:4px">Gracias por tu compra.</div>';
-      document.body.appendChild(t);
-      setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},6000);
-    }
-  }catch(e){}
   d.querySelectorAll("[data-mp]").forEach(function(a){
   a.removeAttribute("target");
   if(a.classList.contains("btn")){
@@ -1713,7 +1741,6 @@ function __mp(c){
   a.style.opacity="";
   if(!j.init_point){alert(j.error||"No se pudo iniciar el pago.");return;}
   if(window.top===window){
-    try{sessionStorage.setItem("mp_pending","1");}catch(e){}
     location.href=j.init_point;
   }else{
     window.open(j.init_point,"_blank");
@@ -1795,16 +1822,23 @@ async function publish(){
   try{
     step("Subiendo imágenes…");
     const cfg=await prepareCloudConfig(JSON.parse(JSON.stringify(s)));
-    step("Generando la página…");
-    let html=buildSite(normalize(cfg));
-    html=html.split("${SUPABASE_URL}").join(SUPABASE_URL);
+
+if(!cfg.backUrl && s.pub?.url){
+  cfg.backUrl=s.pub.url;
+}
+
+step("Generando la página…");
+let html=buildSite(normalize(cfg));
+html=html.split("${SUPABASE_URL}").join(SUPABASE_URL);
     if(html.length>4.5e6)throw new Error("La página pesa "+(html.length/1e6).toFixed(1)+" MB. Reducí fotos de la galería o del producto.");
     step("Publicando en GitHub…");
     const {data,error}=await supabaseClient.functions.invoke("publish-site",{body:{store_id:cloudStoreId,html}});
     if(error)throw new Error(await errOf(error));
     if(!data||!data.url)throw new Error("Respuesta inesperada del servidor.");
-    if(!s.backUrl)s.backUrl=data.url;
-    s.pub={url:data.url,at:new Date().toISOString()};commit(false);
+    if(!s.backUrl){
+  s.backUrl=data.url;
+}
+s.pub={url:data.url,at:new Date().toISOString()};commit(false);
     PUB.msg="¡Listo! En 1 o 2 minutos ya se ve online.";
     UIToast("¡Sitio publicado! En 1-2 min ya se ve online.","ok",6000);
   }catch(e){PUB.err=e.message||String(e);PUB.msg="";console.error("publish:",e);UIToast("Error al publicar: "+(e.message||e),"err",7000);}
@@ -1817,13 +1851,43 @@ async function unpublish(){
     confirmText:"Despublicar",
     danger:true
   });
+
   if(!ok)return;
-  PUB.busy=true;PUB.err="";step("Despublicando…");
-  const {error}=await supabaseClient.functions.invoke("publish-site",{body:{store_id:cloudStoreId,action:"unpublish"}});
-  PUB.busy=false;
-  if(error){PUB.err=await errOf(error);PUB.msg="";UIToast("No se pudo despublicar: "+PUB.err,"err",7000);}
-  else{const s=S();s.pub=null;commit(false);PUB.msg="La web ya no está online.";UIToast("Sitio despublicado","ok");}
-  drawPub();
+
+  PUB.busy=true;
+  PUB.err="";
+  PUB.msg="";
+  step("Despublicando…");
+
+  try{
+    const {error}=await supabaseClient.functions.invoke(
+      "publish-site",
+      {
+        body:{
+          store_id:cloudStoreId,
+          action:"unpublish"
+        }
+      }
+    );
+
+    if(error)throw new Error(await errOf(error));
+
+    const s=S();
+    s.pub=null;
+    commit(false);
+
+    PUB.msg="La web ya no está online.";
+    UIToast("Sitio despublicado","ok");
+
+  }catch(e){
+    PUB.err=e.message||String(e);
+    PUB.msg="";
+    UIToast("No se pudo despublicar: "+PUB.err,"err",7000);
+
+  }finally{
+    PUB.busy=false;
+    if(tab==="publicar")drawPub();
+  }
 }
 
 document.addEventListener("click",async ev=>{
