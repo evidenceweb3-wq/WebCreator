@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>WebHub PRO · Constructor de webs</title>
+<link rel="stylesheet" href="styles.css">
+<script>
+/* Anti-cache: borrar localStorage viejo de la app (no toca sb-* de Supabase) */
+(function killLegacyState(){
+  try{
+    Object.keys(localStorage)
+      .filter(k => k.startsWith("webhub"))
+      .forEach(k => localStorage.removeItem(k));
+  }catch(e){ console.warn("killLegacyState", e); }
+})();
+</script>
+</head>
+<body>
+
+<div class="top">
+  <span class="logo">WEBHUB<small>PRO</small></span>
+  <select id="projSel" title="Proyecto actual"></select>
+  <div class="vsep"></div>
+  <button class="b" id="bNew" title="Nuevo proyecto">+ Nuevo</button>
+  <button class="b ghost" id="bDup" title="Duplicar">Duplicar</button>
+  <button class="b ghost dng" id="bDel" title="Borrar">Borrar</button>
+  <div class="vsep"></div>
+  <button class="b ghost" id="bUndo" title="Deshacer (Ctrl+Z)">↶</button>
+  <button class="b ghost" id="bRedo" title="Rehacer (Ctrl+Y)">↷</button>
+  <span class="sp"></span>
+  <span class="status" id="cloudStatus">Sin conectar</span>
+  <button class="b ghost" id="bSignOut" style="display:none">Salir</button>
+  <button class="b mob" id="bView">👁 Ver</button>
+  <button class="b pri" id="bExport">⬇ Descargar web</button>
+</div>
+
+<div id="authGate" class="show">
+  <div class="authCard">
+    <h2>WEBHUB PRO</h2>
+    <p class="sub">Ingresá para guardar tus sitios en la nube y acceder desde cualquier dispositivo.</p>
+    <label class="authField">Email<input id="authEmail" type="email" autocomplete="email" placeholder="tu@email.com"></label>
+    <label class="authField">Contraseña<input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres"></label>
+    <div class="authActions">
+      <button class="b pri" id="bLogin">Iniciar sesión</button>
+      <button class="b" id="bSignup">Crear cuenta</button>
+    </div>
+    <div id="authMsg">Conectando con Supabase…</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="pane-edit">
+    <div class="tabs" id="tabs"></div>
+    <div id="panel"></div>
+  </div>
+  <div class="pane-prev">
+    <div class="pbar">
+      <div class="devgroup">
+        <button class="b on" data-dev="390">📱 Móvil</button>
+        <button class="b" data-dev="768">💻 Tablet</button>
+        <button class="b" data-dev="full">🖥 PC</button>
+      </div>
+      <span class="sp"></span>
+      <button class="b ghost" id="bTab">Abrir en pestaña</button>
+      <button class="b ghost" id="bJson">Guardar .json</button>
+      <button class="b ghost" id="bOpen">Abrir .json</button>
+      <button class="b ghost" id="bBackup">Backup total</button>
+      <input type="file" id="fileJson" accept=".json" hidden>
+    </div>
+    <div class="pwrap" id="pwrap"><iframe id="frame" title="preview" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe></div>
+  </div>
+</div>
+<input type="file" id="fileImg" accept="image/*" hidden>
+<input type="file" id="fileGal" accept="image/*" multiple hidden>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+</body>
+</html>
