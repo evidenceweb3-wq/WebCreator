@@ -83,3 +83,64 @@ body .tabs button.rb.act::before{content:"";position:absolute;left:-10px;top:20%
   .pst{display:none}
   .prjgrid{grid-template-columns:1fr}
 }
+
+/* =========================================================================
+   ASISTENTE · Crear en 4 pasos
+   ========================================================================= */
+body.m-create .tabs{display:none!important}
+body.m-create .pane-edit::after{left:0}
+body.m-create #panel{padding-bottom:0!important}
+
+/* Selector Crear / Refinar */
+.mbar{display:flex;gap:3px;padding:3px;background:var(--bg,#000);border:1px solid var(--ln2,#1b2840);border-radius:99px;align-self:flex-start;flex:none}
+.mbar button{border:0;background:transparent;color:var(--tx2,#9fb0cc);font-weight:700;font-size:13px;padding:7px 18px;border-radius:99px;cursor:pointer}
+.mbar button:hover{color:var(--tx,#eef4ff)}
+.mbar button.on{background:var(--fire);color:#fff}
+
+/* Pasos */
+.stp{display:flex;align-items:center;gap:8px;flex:none}
+.stp-i{display:flex;align-items:center;gap:8px;background:none;border:0;color:var(--mut,#5d6d8a);font-weight:700;font-size:14px;cursor:pointer;padding:4px 2px}
+.stp-i u{width:26px;height:26px;border-radius:50%;border:2px solid var(--ln2,#1b2840);display:grid;place-items:center;font-size:12px;text-decoration:none;color:var(--mut,#5d6d8a);flex:none;transition:.15s}
+.stp-i.cur{color:#fff}
+.stp-i.cur u{background:var(--fire);border-color:transparent;color:#fff;box-shadow:0 0 14px -2px #1ea0ff}
+.stp-i.done{color:var(--tx2,#9fb0cc)}
+.stp-i.done u{border-color:#1ea0ff;color:#7fdcff}
+.stp-l{flex:1;height:2px;min-width:8px;background:var(--ln2,#1b2840);border-radius:2px}
+@media(max-width:520px){.stp-i span{display:none}.stp-i.cur span{display:inline}}
+
+/* Cuerpo del paso */
+.wz{display:flex;flex-direction:column;gap:16px;padding-top:4px}
+.wzh small{display:block;color:#7fdcff;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.wzh h2{font-size:28px;letter-spacing:-.03em;font-weight:800;line-height:1.1;margin:0 0 6px}
+.wzh p{margin:0;color:var(--tx2,#9fb0cc);font-size:15px;line-height:1.45}
+.f.big input{font-size:24px;font-weight:800;padding:16px 18px;letter-spacing:-.02em;border-radius:14px}
+.f em{font-style:normal;font-weight:500;color:var(--mut,#5d6d8a);font-size:12px;margin-left:4px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:var(--bg3,#0a0f19);border:1px solid var(--ln2,#1b2840);border-radius:99px;padding:8px 14px;font-size:14px;font-weight:600;color:var(--tx2,#9fb0cc);cursor:pointer;transition:.12s}
+.chip:hover{border-color:#1ea0ff;color:#fff}
+.chip.on{background:var(--fire);border-color:transparent;color:#fff}
+.logorow{display:flex;align-items:center;gap:10px}
+
+/* Lista de secciones compacta */
+.slist{display:flex;flex-direction:column;gap:6px}
+.srow{align-items:stretch}
+.srow .tog{padding:7px 12px}
+.srow .tog .tx{display:flex;flex-direction:column;line-height:1.2}
+.srow .tog .tx b{font-size:15px}
+.srow .tog .tx small{color:var(--mut,#5d6d8a);font-size:12px;font-weight:500}
+.srow .b{min-width:38px;padding:0 10px}
+
+/* Pagos / Publicar dentro del asistente */
+.bigbtn{width:100%;padding:15px!important;font-size:16px!important}
+.ckl{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.ckl li{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--mut,#5d6d8a)}
+.ckl li i{width:9px;height:9px;border-radius:50%;background:var(--ln2,#1b2840);flex:none}
+.ckl li.ok{color:var(--tx,#eef4ff)}
+.ckl li.ok i{background:#4ff0a8;box-shadow:0 0 8px #4ff0a8}
+.ckl li em{font-style:normal;color:var(--mut,#5d6d8a);font-size:12px}
+.pubbox{display:flex;flex-direction:column;gap:12px}
+
+/* Barra inferior fija: Atrás / Siguiente */
+.wzf{position:sticky;bottom:0;margin:auto -24px 0;padding:16px 24px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:linear-gradient(180deg,transparent,var(--panel,#030509) 38%);z-index:4}
+.wzf .b{padding:12px 22px;font-size:15px}
+@media(max-width:900px){.wzf{margin:auto -12px 0;padding:14px 12px}}
