@@ -7,6 +7,7 @@
 <title>TiendaOnline · Creador de tiendas</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Montserrat:ital,wght@1,800;1,900&display=swap">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="editor-v8.css">
 <script>
 (function(){try{Object.keys(localStorage).filter(k=>k.startsWith("webhub")).forEach(k=>localStorage.removeItem(k));}catch(e){}})();
 </script>
@@ -28,19 +29,31 @@
     <span class="wm">Tienda<b>Online</b></span>
   </span>
   <select id="projSel" title="Proyecto"></select>
-  <div class="vsep"></div>
-  <button class="b" id="bNew" title="Nuevo">+</button>
+  <button class="b" id="bNew" title="Nuevo proyecto">+</button>
   <button class="b ghost" id="bUndo" title="Deshacer">↶</button>
   <button class="b ghost" id="bRedo" title="Rehacer">↷</button>
-  <div id="mnuWrap">
-    <button class="b ghost" id="bMore" title="Más">⋯</button>
-    <div id="mnu"></div>
+
+  <!-- Selector de dispositivo: vive en el header -->
+  <div class="devgroup" id="devgroup" role="group" aria-label="Vista previa">
+    <button class="b" data-dev="390" title="Móvil">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg><span>Móvil</span>
+    </button>
+    <button class="b" data-dev="768" title="Tablet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M11 18h2"/></svg><span>Tablet</span>
+    </button>
+    <button class="b on" data-dev="full" title="PC">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/></svg><span>PC</span>
+    </button>
   </div>
+
   <span class="sp"></span>
   <span class="status" id="cloudStatus">Sin conectar</span>
   <button class="b ghost" id="bSignOut" style="display:none">Salir</button>
   <button class="b mob" id="bView">👁</button>
   <button class="b pri" id="bPub">🚀 Publicar</button>
+
+  <!-- Compatibilidad: ya no se muestra (sin menú ⋯). Las acciones viven en Avanzado → Proyecto y copias -->
+  <div id="mnuWrap" hidden><button id="bMore" type="button" tabindex="-1"></button><div id="mnu"></div></div>
 </div>
 
 <div id="authGate" class="show mode-login">
@@ -128,20 +141,13 @@
     <div id="panel"></div>
   </div>
   <div class="pane-prev">
-    <div class="pbar">
-      <div class="devgroup">
-        <button class="b on" data-dev="390">📱 Móvil</button>
-        <button class="b" data-dev="768">💻 Tablet</button>
-        <button class="b" data-dev="full">🖥 PC</button>
-      </div>
-    </div>
     <div class="pwrap" id="pwrap">
       <iframe id="frame" title="preview" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
   </div>
 </div>
 
-<!-- Acciones ocultas: los parches V6/V7 las mueven al menú ⋯ -->
+<!-- Acciones del proyecto (se usan desde Avanzado → Proyecto y copias) -->
 <div style="display:none">
   <button id="bDup">Duplicar proyecto</button>
   <button id="bDel">Borrar proyecto</button>
@@ -157,5 +163,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
+<script src="editor-v8.js"></script>
 </body>
 </html>
