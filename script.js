@@ -1888,8 +1888,12 @@ function scheduleSlugCheck(){ clearTimeout(slugTimer); slugTimer = setTimeout(up
 async function updateSlugStatus(){
   const status = byId("slugStatus");
   const submitBtn = byId("bSubmit");
+  const row = document.querySelector("#authGate .slug-row");
   const raw = byId("storeName")?.value.trim() || "";
   if(!status) return;
+
+  if(row){ row.classList.remove("available","taken"); }
+
   if(!raw || raw.length < 2){
     status.textContent = "";
     status.className = "slug-status";
@@ -1900,6 +1904,7 @@ async function updateSlugStatus(){
   if(!slug){
     status.textContent = "Usá solo letras, números y guiones";
     status.className = "slug-status err";
+    if(row) row.classList.add("taken");
     if(submitBtn) submitBtn.disabled = true;
     return;
   }
@@ -1907,13 +1912,16 @@ async function updateSlugStatus(){
   status.className = "slug-status checking";
   const r = await checkSlugAvailability(slug);
   if(serverSlug(byId("storeName")?.value.trim() || "") !== slug) return;
+
   if(r === "taken"){
-    status.textContent = `"${slug}" ya está en uso`;
+    status.textContent = `"${slug}.tiendaonline.site" ya está en uso`;
     status.className = "slug-status err";
+    if(row) row.classList.add("taken");
     if(submitBtn) submitBtn.disabled = true;
   } else if(r === "available"){
-    status.textContent = `${slug}.tiendaonline.store está libre ✓`;
+    status.textContent = `${slug}.tiendaonline.site está libre ✓`;
     status.className = "slug-status ok";
+    if(row) row.classList.add("available");
     if(submitBtn) submitBtn.disabled = false;
   } else {
     status.textContent = "";
