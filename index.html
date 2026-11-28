@@ -4,20 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>TiendaOnline · Constructor de tiendas</title>
+<title>TiendaOnline · Creador de tiendas</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Montserrat:ital,wght@1,800;1,900&display=swap">
 <link rel="stylesheet" href="styles.css">
 <script>
-/* Anti-cache: borrar localStorage viejo de la app (no toca sb-* de Supabase) */
-(function killLegacyState(){
-  try{
-    Object.keys(localStorage)
-      .filter(k => k.startsWith("webhub"))
-      .forEach(k => localStorage.removeItem(k));
-  }catch(e){ console.warn("killLegacyState", e); }
-})();
+(function(){try{Object.keys(localStorage).filter(k=>k.startsWith("webhub")).forEach(k=>localStorage.removeItem(k));}catch(e){}})();
 </script>
 </head>
 <body>
@@ -26,74 +17,113 @@
   <span class="logo">
     <svg class="cart" viewBox="0 0 70 50" aria-hidden="true">
       <defs>
-        <linearGradient id="cft" x1="0" x2="1">
-          <stop offset="0" stop-color="#0a5cff" stop-opacity="0"/>
-          <stop offset="1" stop-color="#3db4ff"/>
-        </linearGradient>
-        <linearGradient id="cgt" x1="0" y1="1" x2="0" y2="0">
-          <stop offset="0" stop-color="#0a5cff"/>
-          <stop offset="1" stop-color="#9ae3ff"/>
-        </linearGradient>
+        <linearGradient id="cft" x1="0" x2="1"><stop offset="0" stop-color="#0a5cff" stop-opacity="0"/><stop offset="1" stop-color="#3db4ff"/></linearGradient>
+        <linearGradient id="cgt" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#0a5cff"/><stop offset="1" stop-color="#9ae3ff"/></linearGradient>
       </defs>
       <path d="M1 12h17M5 20h14M9 28h11" stroke="url(#cft)" stroke-width="3" stroke-linecap="round"/>
       <path d="M22 6h7l5 27h24l5-19H30" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="38" cy="43" r="4.2" fill="#fff"/>
-      <circle cx="54" cy="43" r="4.2" fill="#fff"/>
+      <circle cx="38" cy="43" r="4.2" fill="#fff"/><circle cx="54" cy="43" r="4.2" fill="#fff"/>
       <path d="M22 34c-1 5-5 7-9 12 6-1 11-3 13-8 .5-1.7-.2-3.2-1.5-4.2-.6.5-1.6.2-2.5.2z" fill="url(#cgt)"/>
     </svg>
     <span class="wm">Tienda<b>Online</b></span>
   </span>
-  <select id="projSel" title="Proyecto actual"></select>
+  <select id="projSel" title="Proyecto"></select>
   <div class="vsep"></div>
-  <button class="b" id="bNew" title="Nuevo proyecto">+</button>
-  <button class="b ghost" id="bDup" title="Duplicar">Duplicar</button>
-  <button class="b ghost dng" id="bDel" title="Borrar">Borrar</button>
-  <div class="vsep"></div>
-  <button class="b ghost" id="bUndo" title="Deshacer (Ctrl+Z)">↶</button>
-  <button class="b ghost" id="bRedo" title="Rehacer (Ctrl+Y)">↷</button>
+  <button class="b" id="bNew" title="Nuevo">+</button>
+  <button class="b ghost" id="bUndo" title="Deshacer">↶</button>
+  <button class="b ghost" id="bRedo" title="Rehacer">↷</button>
+  <div id="mnuWrap">
+    <button class="b ghost" id="bMore" title="Más">⋯</button>
+    <div id="mnu"></div>
+  </div>
   <span class="sp"></span>
   <span class="status" id="cloudStatus">Sin conectar</span>
   <button class="b ghost" id="bSignOut" style="display:none">Salir</button>
-  <button class="b mob" id="bView">👁 Ver</button>
-  <button class="b pri" id="bExport">⬇ Descargar web</button>
+  <button class="b mob" id="bView">👁</button>
+  <button class="b pri" id="bPub">🚀 Publicar</button>
 </div>
 
-<div id="authGate" class="show">
+<div id="authGate" class="show mode-login">
   <div class="authCard">
     <div class="brand">
       <svg class="cart" viewBox="0 0 70 50" aria-hidden="true">
         <defs>
-          <linearGradient id="cfa" x1="0" x2="1">
-            <stop offset="0" stop-color="#0a5cff" stop-opacity="0"/>
-            <stop offset="1" stop-color="#3db4ff"/>
-          </linearGradient>
-          <linearGradient id="cga" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0" stop-color="#0a5cff"/>
-            <stop offset="1" stop-color="#9ae3ff"/>
-          </linearGradient>
+          <linearGradient id="cfa" x1="0" x2="1"><stop offset="0" stop-color="#0a5cff" stop-opacity="0"/><stop offset="1" stop-color="#3db4ff"/></linearGradient>
+          <linearGradient id="cga" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#0a5cff"/><stop offset="1" stop-color="#9ae3ff"/></linearGradient>
         </defs>
         <path d="M1 12h17M5 20h14M9 28h11" stroke="url(#cfa)" stroke-width="3" stroke-linecap="round"/>
         <path d="M22 6h7l5 27h24l5-19H30" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="38" cy="43" r="4.2" fill="#fff"/>
-        <circle cx="54" cy="43" r="4.2" fill="#fff"/>
+        <circle cx="38" cy="43" r="4.2" fill="#fff"/><circle cx="54" cy="43" r="4.2" fill="#fff"/>
         <path d="M22 34c-1 5-5 7-9 12 6-1 11-3 13-8 .5-1.7-.2-3.2-1.5-4.2-.6.5-1.6.2-2.5.2z" fill="url(#cga)"/>
       </svg>
       <span class="wm">Tienda<b>Online</b></span>
     </div>
-    <p class="sub"><span>DE CERO A TU TIENDA ONLINE, <b>SIN COMPLICACIONES.</b></span></p>
-    <div class="sol">
-      <i></i>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#f6b40e" stroke-width="4" stroke-dasharray="1.8 1.85"/><circle cx="12" cy="12" r="5.5" fill="#f6b40e"/></svg>
-      <i></i>
+    <p class="sub">DE CERO A TU TIENDA ONLINE, <b>SIN COMPLICACIONES.</b></p>
+    <div class="sol"><i></i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#f6b40e" stroke-width="4" stroke-dasharray="1.8 1.85"/><circle cx="12" cy="12" r="5.5" fill="#f6b40e"/></svg><i></i></div>
+
+    <div class="authMode">
+      <button type="button" id="bLogin" class="on">Iniciar sesión</button>
+      <button type="button" id="bSignup">Crear cuenta</button>
     </div>
-    <p class="sub" style="font-style:normal;letter-spacing:0;font-weight:500;margin:10px 0 18px">Ingresá para guardar tus tiendas en la nube y editarlas desde cualquier dispositivo.</p>
-    <label class="authField">Email<input id="authEmail" type="email" autocomplete="email" placeholder="tu@email.com"></label>
-    <label class="authField">Contraseña<input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres"></label>
+
+    <!-- Nombre de la tienda (solo al crear) -->
+    <div class="authField signup-only" style="display:none">
+      <span>Nombre de tu tienda</span>
+      <div class="slug-row">
+        <input id="storeName" type="text" placeholder="mitienda" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <span class="suffix">.tiendaonline.store</span>
+      </div>
+      <small id="slugStatus" class="slug-status"></small>
+    </div>
+
+    <!-- Email con dominio fijo -->
+    <div class="authField">
+      <span>Email</span>
+      <div class="email-row">
+        <input id="emailLocal" type="text" placeholder="tu" autocomplete="username" autocapitalize="none" spellcheck="false">
+        <span class="at">@</span>
+        <select id="emailDomain" aria-label="Dominio">
+          <option value="gmail.com">gmail.com</option>
+          <option value="hotmail.com">hotmail.com</option>
+          <option value="outlook.com">outlook.com</option>
+          <option value="yahoo.com">yahoo.com</option>
+          <option value="icloud.com">icloud.com</option>
+          <option value="live.com">live.com</option>
+          <option value="protonmail.com">protonmail.com</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Contraseña -->
+    <div class="authField">
+      <span>Contraseña</span>
+      <div class="pw-row">
+        <input id="authPassword" type="password" placeholder="Mínimo 6 caracteres" autocomplete="current-password">
+        <button type="button" class="eye" id="togglePw" aria-label="Mostrar contraseña"></button>
+      </div>
+    </div>
+
+    <!-- Confirmar contraseña (solo al crear) -->
+    <div class="authField signup-only" style="display:none">
+      <span>Confirmá la contraseña</span>
+      <div class="pw-row">
+        <input id="authPassword2" type="password" placeholder="Repetí la contraseña" autocomplete="new-password">
+        <button type="button" class="eye" id="togglePw2" aria-label="Mostrar contraseña"></button>
+      </div>
+    </div>
+
     <div class="authActions">
-      <button class="b pri" id="bLogin">Iniciar sesión</button>
-      <button class="b" id="bSignup">Crear cuenta</button>
+      <button type="button" class="b pri" id="bSubmit">Iniciar sesión</button>
     </div>
+
     <div id="authMsg">Conectando con Supabase…</div>
+
+    <button type="button" class="linkBtn" id="bForgot">¿Olvidaste tu contraseña?</button>
+
+    <!-- Legacy hidden (para no romper handlers base) -->
+    <div style="display:none">
+      <input id="authEmail" type="hidden">
+    </div>
   </div>
 </div>
 
@@ -109,16 +139,24 @@
         <button class="b" data-dev="768">💻 Tablet</button>
         <button class="b" data-dev="full">🖥 PC</button>
       </div>
-      <span class="sp"></span>
-      <button class="b ghost" id="bTab">Abrir en pestaña</button>
-      <button class="b ghost" id="bJson">Guardar .json</button>
-      <button class="b ghost" id="bOpen">Abrir .json</button>
-      <button class="b ghost" id="bBackup">Backup total</button>
-      <input type="file" id="fileJson" accept=".json" hidden>
     </div>
-    <div class="pwrap" id="pwrap"><iframe id="frame" title="preview" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe></div>
+    <div class="pwrap" id="pwrap">
+      <iframe id="frame" title="preview" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe>
+    </div>
   </div>
 </div>
+
+<!-- Acciones ocultas: los parches V6/V7 las mueven al menú ⋯ -->
+<div style="display:none">
+  <button id="bDup">Duplicar proyecto</button>
+  <button id="bDel">Borrar proyecto</button>
+  <button id="bExport">Descargar web (.html)</button>
+  <button id="bTab">Abrir en pestaña nueva</button>
+  <button id="bJson">Guardar proyecto (.json)</button>
+  <button id="bOpen">Abrir proyecto (.json)</button>
+  <button id="bBackup">Backup de todo</button>
+</div>
+<input type="file" id="fileJson" accept=".json" hidden>
 <input type="file" id="fileImg" accept="image/*" hidden>
 <input type="file" id="fileGal" accept="image/*" multiple hidden>
 
