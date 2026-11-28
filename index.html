@@ -66,33 +66,28 @@
       <button type="button" id="bSignup">Crear cuenta</button>
     </div>
 
-    <!-- Nombre de la tienda (solo al crear) -->
     <div class="authField signup-only" style="display:none">
-      <span>Nombre de tu tienda</span>
-      <div class="slug-row">
-        <input id="storeName" type="text" placeholder="mitienda" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false">
-        <span class="suffix">.tiendaonline.store</span>
-      </div>
-      <small id="slugStatus" class="slug-status"></small>
-    </div>
+  <span>Nombre de tu tienda</span>
+  <div class="slug-row">
+    <input id="storeName" type="text" placeholder="mitienda" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false">
+    <span class="suffix">.tiendaonline.site</span>
+  </div>
+  <small id="slugStatus" class="slug-status"></small>
+</div>
 
     <!-- Email con dominio fijo -->
-    <div class="authField">
-      <span>Email</span>
-      <div class="email-row">
-        <input id="emailLocal" type="text" placeholder="tu" autocomplete="username" autocapitalize="none" spellcheck="false">
-        <span class="at">@</span>
-        <select id="emailDomain" aria-label="Dominio">
-          <option value="gmail.com">gmail.com</option>
-          <option value="hotmail.com">hotmail.com</option>
-          <option value="outlook.com">outlook.com</option>
-          <option value="yahoo.com">yahoo.com</option>
-          <option value="icloud.com">icloud.com</option>
-          <option value="live.com">live.com</option>
-          <option value="protonmail.com">protonmail.com</option>
-        </select>
-      </div>
-    </div>
+   <div class="authField">
+  <span>Email</span>
+  <div class="email-row">
+    <input id="emailLocal" type="text" placeholder="tu" autocomplete="username" autocapitalize="none" spellcheck="false">
+    <select id="emailDomain" aria-label="Dominio">
+      <option value="gmail.com">@gmail.com</option>
+      <option value="hotmail.com">@hotmail.com</option>
+      <option value="icloud.com">@icloud.com</option>
+      <option value="outlook.com">@outlook.com</option>
+    </select>
+  </div>
+</div>
 
     <!-- Contraseña -->
     <div class="authField">
