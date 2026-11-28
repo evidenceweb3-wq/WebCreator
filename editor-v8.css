@@ -1,0 +1,85 @@
+/* =========================================================================
+   TiendaOnline · editor-v8.css  (se carga DESPUÉS de styles.css)
+   Layout del editor, header con selector de dispositivo, menú izquierdo
+   expandido, tarjeta de Pagos y vista previa ajustada al contenedor.
+   ========================================================================= */
+
+/* ---------- Header ---------- */
+.top{display:flex;align-items:center;gap:10px;flex:none}
+.top .sp{flex:1}
+.top .devgroup{display:flex;gap:2px;background:var(--bg3,#0d121e);border:1px solid var(--ln2,#1e283d);border-radius:99px;padding:3px;margin-left:6px}
+.top .devgroup .b{display:flex;align-items:center;gap:7px;border:0;background:transparent;border-radius:99px;padding:7px 14px;font-weight:700;font-size:14px;color:var(--tx2,#9aa9c4);cursor:pointer}
+.top .devgroup .b svg{width:17px;height:17px;flex:none}
+.top .devgroup .b:hover{color:var(--tx,#eef3ff)}
+.top .devgroup .b.on{background:linear-gradient(135deg,#1747ff,#2f8cff 55%,#5ee7ff);color:#fff}
+#mnuWrap[hidden]{display:none!important}
+
+/* ---------- Layout desktop ---------- */
+@media(min-width:901px){
+  body{display:flex!important;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  body .main{flex:1;min-height:0;display:grid!important;grid-template-columns:clamp(560px,40vw,720px) minmax(0,1fr)!important}
+  body .pane-edit{display:flex!important;flex-direction:row!important;min-width:0;min-height:0;height:100%}
+  body .tabs{width:190px!important;flex:none;display:flex!important;flex-direction:column!important;align-items:stretch;gap:2px!important;padding:12px 10px 24px!important;overflow-y:auto!important}
+  body #panel{flex:1;min-width:0;overflow-y:auto!important;padding:24px 24px 80px!important;display:flex;flex-direction:column;gap:14px}
+  body .pane-prev{display:flex!important;flex-direction:column;min-width:0;min-height:0;height:100%}
+}
+#pwrap{flex:1;min-height:0;position:relative!important;overflow:hidden!important;display:block!important;width:100%;padding:0!important}
+@media(min-width:901px){body .pane-edit::after{left:190px}}
+#pwrap iframe{position:absolute!important;left:50%;top:0;transform-origin:top center;border:0;background:#fff;max-width:none!important;transition:opacity .12s ease}
+#pwrap[data-dev="full"] iframe{border-radius:0!important;box-shadow:none!important}
+#pwrap:not([data-dev="full"]) iframe{border-radius:22px!important}
+
+/* ---------- Menú izquierdo expandido ---------- */
+.rsec{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut,#5f6e8a);padding:16px 12px 6px;font-weight:800}
+.rsec:first-child{padding-top:4px}
+body .tabs button.rb{display:flex!important;flex-direction:row!important;align-items:center;justify-content:flex-start!important;gap:12px!important;width:100%;padding:11px 12px!important;border:0!important;border-radius:12px!important;background:transparent;color:var(--tx2,#9aa9c4)!important;font-size:15px!important;font-weight:600!important;text-align:left;cursor:pointer;position:relative}
+body .tabs button.rb svg{width:20px;height:20px;flex:none;opacity:.8}
+body .tabs button.rb:hover{background:var(--bg3,#0d121e)!important;color:var(--tx,#eef3ff)!important}
+body .tabs button.rb.act{background:var(--ac-soft,#0c1c3d)!important;color:#fff!important}
+body .tabs button.rb.act svg{color:#5ee7ff;opacity:1}
+body .tabs button.rb.act::before{content:"";position:absolute;left:-10px;top:20%;bottom:20%;width:4px;border-radius:0 4px 4px 0;background:linear-gradient(180deg,#5ee7ff,#2f8cff);box-shadow:0 0 14px #2f8cff}
+.pst{margin-left:auto;font-style:normal;font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px;letter-spacing:.02em}
+.pst.on{background:#0e3b2a;color:#4ff0a8}
+.pst.off{background:var(--bg3,#0d121e);color:var(--mut,#5f6e8a)}
+
+/* ---------- Panel: encabezado + secciones más claras ---------- */
+.vhead h2{font-size:26px;letter-spacing:-.025em;margin:0 0 4px;font-weight:800}
+.vhead p{margin:0;color:var(--tx2,#9aa9c4);font-size:15px}
+.vbody{display:flex;flex-direction:column;gap:12px}
+.vbody .ac{background:var(--bg2,#080b14)!important;border:1px solid var(--ln,#141b2b)!important;border-radius:16px!important}
+.vbody .ac.open{border-color:var(--ln2,#1e283d)!important}
+.vbody .ach{font-size:16px!important;padding:15px 16px!important}
+.vbody .acb{padding:4px 16px 18px!important;gap:14px!important}
+.vbody .f>span{font-size:13px;color:var(--tx2,#9aa9c4);font-weight:600}
+.vbody .small{color:var(--mut,#5f6e8a);line-height:1.45}
+.prjgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.prjgrid .b{text-align:left;padding:11px 14px!important}
+.prjgrid .b.dng{grid-column:1/-1}
+
+/* ---------- Pagos: estado activado / apagado ---------- */
+.pcard{border:1px solid var(--ln2,#1e283d);border-radius:18px;padding:18px;background:var(--bg2,#080b14)}
+.pcard.is-on{border-color:#1e6b4c;background:linear-gradient(160deg,#0a2a1f,var(--bg2,#080b14))}
+.pc-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.pc-top b{display:block;font-size:19px;letter-spacing:-.02em}
+.pc-top small{display:block;color:var(--tx2,#9aa9c4);font-size:14px;margin-top:2px}
+.pc-dot{width:14px;height:14px;border-radius:50%;background:var(--mut,#5f6e8a);flex:none}
+.pcard.is-on .pc-dot{background:#4ff0a8;box-shadow:0 0 14px #4ff0a8}
+.pc-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--ln,#141b2b)}
+.pc-list li{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--ln,#141b2b);font-size:15px}
+.pc-list li:last-child{border-bottom:0;padding-bottom:0}
+.pc-list li i{width:9px;height:9px;border-radius:50%;background:var(--mut,#5f6e8a);flex:none}
+.pc-list li.ok i{background:#4ff0a8}
+.pc-list li em{margin-left:auto;font-style:normal;font-size:13px;font-weight:700;color:var(--mut,#5f6e8a)}
+.pc-list li.ok em{color:#4ff0a8}
+
+/* ---------- Mobile ---------- */
+@media(max-width:900px){
+  .top .devgroup{display:none}
+  body .tabs{display:flex!important;flex-direction:row!important;align-items:center;overflow-x:auto!important;overflow-y:hidden!important;width:100%!important;padding:6px!important;gap:4px!important}
+  .rsec{display:none}
+  body .tabs button.rb{flex:none;width:auto;flex-direction:column!important;gap:3px!important;padding:8px 12px!important;font-size:11px!important}
+  body .tabs button.rb svg{width:20px;height:20px}
+  body .tabs button.rb.act::before{left:25%;right:25%;top:-6px;bottom:auto;width:auto;height:3px;border-radius:0 0 4px 4px}
+  .pst{display:none}
+  .prjgrid{grid-template-columns:1fr}
+}
