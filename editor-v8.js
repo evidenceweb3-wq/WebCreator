@@ -54,6 +54,7 @@ const find=id=>ALL.find(x=>x.id===id)||ALL[0];
 const T2V={look:"estilos",content:"marca",store:"productos",launch:"publicar",publicar:"publicar",pagos:"pagos"};
 
 let view="estilos",lastTab=null,inBase=false;
+let mode="create",step=1,touched=false;   /* create = asistente de 4 pasos · refine = todo el detalle */
 
 /* ---------- Estado de Mercado Pago (para mostrar Activado / Apagado) ---------- */
 let MPS={known:false,on:false},mpAt=0;
@@ -113,6 +114,11 @@ let lastView=null;
 renderPanel=function(){
   if(inBase)return;
   const s=S();if(!s)return;
+  document.body.classList.toggle("m-create",mode==="create");
+  if(mode==="create"){
+    if(tab==="pagos")step=3;else if(tab==="publicar")step=4;
+    return renderCreate(s);
+  }
   const cur=find(view);
   if(tab!==lastTab&&T2V[tab]&&find(view).tab!==tab)view=T2V[tab];
   const item=find(view),p=$("panel");
@@ -129,7 +135,7 @@ renderPanel=function(){
     b.dataset.view=/Logo/.test(t)?"marca":/WhatsApp/.test(t)?"contacto":/Productos/.test(t)?"productos":"pagos";
     b.removeAttribute("data-go");
   });
-  p.insertAdjacentHTML("afterbegin",'<div class="vhead"><h2>'+item.l+'</h2><p>'+item.d+'</p></div>'+(item.id==="pagos"?payCard(s):""));
+  p.insertAdjacentHTML("afterbegin",modeBar()+'<div class="vhead"><h2>'+item.l+'</h2><p>'+item.d+'</p></div>'+(item.id==="pagos"?payCard(s):""));
   if(item.id==="avanzado"){
     p.insertAdjacentHTML("beforeend",'<section class="ac open"><div class="ach" style="cursor:default"><span>Proyecto y copias</span></div><div class="acb"><div class="prjgrid">'+
       PRJ.map(x=>'<button class="b'+(x[2]?" dng":"")+'" data-prj="'+x[0]+'">'+x[1]+'</button>').join("")+'</div></div></section>');
@@ -150,7 +156,7 @@ document.addEventListener("click",ev=>{
   if(!ev.target.closest('[data-pub="go"],#bPub'))return;
   clearInterval(pw);let n=0;
   pw=setInterval(()=>{
-    n++;if(view==="publicar")renderPanel();
+    n++;if((mode==="refine"&&view==="publicar")||(mode==="create"&&step===4))renderPanel();
     const busy=/Publicando…/.test($("panel").textContent||"");
     if((!busy&&n>3)||n>240)clearInterval(pw);
   },500);
@@ -221,13 +227,125 @@ renderPrev=function(){
   },60);
 };
 
+
+/* =========================================================================
+   ASISTENTE · 1 Marca → 2 Secciones → 3 Pagos → 4 Publicar
+   ========================================================================= */
+const STEPS=[{n:1,l:"Marca"},{n:2,l:"Secciones"},{n:3,l:"Pagos"},{n:4,l:"Publicar"}];
+const HINT={pts:"3 ventajas de tu negocio",prod:"Tu catálogo con precios",about:"Tu historia en pocas líneas",gal:"Fotos de tus trabajos",test:"Lo que dicen tus clientes",faq:"Respuestas a dudas comunes",map:"Tu ubicación en el mapa",cta:"Banda con botón de contacto",cont:"Datos, redes y WhatsApp"};
+const modeBar=()=>'<div class="mbar"><button data-wz="mode:create" class="'+(mode==="create"?"on":"")+'">Crear</button><button data-wz="mode:refine" class="'+(mode==="refine"?"on":"")+'">Refinar</button></div>';
+const stepper=()=>'<div class="stp">'+STEPS.map(x=>'<button class="stp-i'+(x.n===step?" cur":"")+(x.n<step?" done":"")+'" data-wz="step:'+x.n+'"><u>'+(x.n<step?"✓":x.n)+'</u><span>'+x.l+'</span></button>').join('<i class="stp-l"></i>')+'</div>';
+const wzh=(t,d)=>'<div class="wzh"><small>Paso '+step+' de 4</small><h2>'+t+'</h2><p>'+d+'</p></div>';
+const foot=()=>'<div class="wzf">'+(step>1?'<button class="b" data-wz="back">← Atrás</button>':'<span></span>')+(step<4?'<button class="b pri" data-wz="next">Siguiente →</button>':'<button class="b pri" data-wz="mode:refine">Refinar diseño →</button>')+'</div>';
+
+function b1(s){
+  const rub=Object.entries(TEMPLATES).map(([k,t])=>'<button class="chip'+(s.wzRubro===k?" on":"")+'" data-wz="tpl:'+k+'">'+t.n+'</button>').join("");
+  return wzh("¿Cómo se llama tu marca?","Es el título de tu web. Una palabra queda en una sola línea; si son varias, bajan una debajo de otra.")
+  +'<label class="f big"><span>Nombre de la marca</span><input data-k="name" value="'+esc(s.name)+'" placeholder="Ej: Luna" maxlength="40" autocomplete="off"></label>'
+  +'<label class="f"><span>Frase corta</span><input data-k="tagline" value="'+esc(s.tagline)+'" placeholder="Qué hacés, en una línea" maxlength="90"></label>'
+  +'<div class="f"><span>¿Qué vendés? <em>Arma estilo, secciones y productos de ejemplo</em></span><div class="chips">'+rub+'</div></div>'
+  +'<div class="logorow"><div class="thumb">'+(s.logo?'<img class="thumb" src="'+safeHref(s.logo)+'">':"Logo")+'</div><button class="b" data-up="logo">'+(s.logo?"Cambiar logo":"Subir logo (opcional)")+'</button>'+(s.logo?'<button class="b dng" data-clr="logo">Quitar</button>':"")+'</div>';
+}
+function b2(s){
+  const rows=s.order.map((k,i)=>'<div class="ord srow"><label class="tog"><input type="checkbox" data-k="sections.'+k+'" '+(s.sections[k]?"checked":"")+'><span class="tx"><b>'+SL[k]+'</b><small>'+HINT[k]+'</small></span></label><button class="b" data-mvs="'+i+':-1" '+(i?"":"disabled")+'>↑</button><button class="b" data-mvs="'+i+':1" '+(i===s.order.length-1?"disabled":"")+'>↓</button></div>').join("");
+  return wzh("¿Qué secciones querés?","Activá las que necesites y ordenalas con las flechas. Lo ves en vivo a la derecha.")
+  +'<div class="slist">'+rows+'</div>'
+  +'<div class="row2"><label class="f"><span>Tu WhatsApp</span><input type="tel" data-k="wa" value="'+esc(s.wa)+'" placeholder="5493462123456"></label>'
+  +'<div class="f"><span>Productos</span><button class="b" data-wz="goto:productos">Editar productos →</button></div></div>';
+}
+function b3(s){
+  const on=MPS.on;
+  return wzh("Conectá tu medio de pago","Los cobros caen directo en tu cuenta de Mercado Pago. Podés saltear este paso y hacerlo después.")
+  +payCard(s)
+  +(on?'<button class="b dng bigbtn" data-act="mpoff">Desconectar Mercado Pago</button>':'<button class="b mpb bigbtn" data-act="mpon">Conectar con Mercado Pago</button>')
+  +TOG("Mostrar botón de pago en los productos","mpCheckout",s.mpCheckout)
+  +TOG("Mostrar logos de medios de pago en el pie","showPayFooter",s.showPayFooter!==false);
+}
+function pubHTML(){
+  inBase=true;
+  try{tab="launch";base();}finally{inBase=false;}
+  const g=$("panel").querySelector('.grp[data-g="launchpublicar"] .gb');
+  return g?g.innerHTML:"";
+}
+function b4(s){
+  const ck=(ok,l)=>'<li class="'+(ok?"ok":"")+'"><i></i>'+l+'</li>';
+  const pub=pubHTML();
+  return wzh("Publicá tu web","Un click y queda online con link propio y HTTPS. Después podés seguir ajustando.")
+  +'<ul class="ckl">'+ck(!!s.name&&s.name!=="Mi Negocio","Nombre de marca")+ck(Object.values(s.sections).some(Boolean),"Secciones elegidas")+ck(!!s.wa,"WhatsApp para recibir consultas")+ck(payActive(s),"Cobros con Mercado Pago <em>(opcional)</em>")+'</ul>'
+  +'<div class="pubbox">'+pub+'</div>';
+}
+function applyTpl(key){
+  const s=S(),t=TEMPLATES[key];if(!s||!t)return;
+  const keep={name:s.name,wa:s.wa,logo:s.logo,hero:s.hero,tel:s.tel,ig:s.ig,mail:s.mail,dir:s.dir,mp:s.mp,mpCheckout:s.mpCheckout,mpCur:s.mpCur,backUrl:s.backUrl,pub:s.pub};
+  const tp=JSON.parse(JSON.stringify(t));delete tp.n;
+  const sec=tp.sections||{};delete tp.sections;
+  Object.assign(s,tp);s.colors={...tp.colors};
+  applyLayoutDefaults(s,tp.layout);
+  if(tp.heroAlign)s.heroAlign=tp.heroAlign;if(tp.heroH)s.heroH=tp.heroH;
+  if(tp.grad===undefined)s.grad=false;
+  Object.assign(s.sections,sec);
+  Object.keys(keep).forEach(k=>{if(keep[k]!==undefined)s[k]=keep[k];});
+  s.wzRubro=key;
+  commit(true);
+}
+function renderCreate(s){
+  const p=$("panel"),id="c"+step,keepScroll=lastView===id?p.scrollTop:0;
+  const body=step===1?b1(s):step===2?b2(s):step===3?b3(s):b4(s);
+  p.innerHTML=modeBar()+stepper()+'<div class="wz">'+body+'</div>'+foot();
+  p.scrollTop=keepScroll;lastView=id;
+  tab="look";lastTab=tab;
+  if(step===3)mpCheck();
+  updatePayStatus();
+}
+document.addEventListener("click",ev=>{
+  const b=ev.target.closest("[data-wz]");if(!b)return;
+  touched=true;
+  const parts=b.dataset.wz.split(":"),a=parts[0],v=parts[1];
+  if(a==="tpl"){applyTpl(v);return;}
+  if(a==="step")step=+v;
+  else if(a==="next")step=Math.min(4,step+1);
+  else if(a==="back")step=Math.max(1,step-1);
+  else if(a==="mode"){mode=v;}
+  else if(a==="goto"){mode="refine";view=v;}
+  renderTabs();renderPanel();
+  const p=$("panel");if(p)p.scrollTop=0;
+});
+document.addEventListener("focusin",ev=>{
+  const t=ev.target;
+  if(t&&t.matches&&t.matches('.wz [data-k="name"]')&&/^(Mi Negocio|Mi negocio|Cliente \d+)$/.test(t.value))t.select();
+});
+
+/* =========================================================================
+   TÍTULO INTELIGENTE · una palabra = una línea · varias = una debajo de otra
+   La letra se achica sola para que ninguna palabra se corte ni se salga.
+   ========================================================================= */
+const _bs=buildSite;
+buildSite=function(s){
+  let h=_bs(s);
+  try{
+    const name=String(s.name||"").trim();if(!name)return h;
+    const words=name.split(/\s+/),L=Math.max.apply(null,words.map(w=>w.length));
+    const inner=words.map(w=>'<span class="wl">'+esc(w)+'</span>').join("");
+    h=h.split(">"+esc(s.name)+"</h1>").join(">"+inner+"</h1>");
+    const wide=["editorial","portfolio"].indexOf(s.layout)>-1||["mag","outline","cinema"].indexOf(s.skin)>-1;
+    const mx=wide?150:100;
+    const fs=s.layout==="bio"?"":"font-size:clamp(18px,min("+(wide?13:10)+"vw,calc(min(88vw,1000px)/"+(L*0.68).toFixed(2)+")),"+mx+"px)!important;";
+    const css="body h1{word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important;"+fs+"line-height:.98!important}body h1 .wl{display:block;white-space:nowrap}";
+    h=h.replace("</style>",()=>css+"</style>");
+  }catch(e){console.error("title:",e);}
+  return h;
+};
+
 /* ---------- Arranque ---------- */
 const startDev=innerWidth>=900?"full":"390";
 if("ResizeObserver" in window)new ResizeObserver(fitPreview).observe($("pwrap"));
 addEventListener("resize",fitPreview);
 renderTabs();setDev(startDev);renderPanel();renderPrev();
 let n0=0;const iv=setInterval(()=>{
-  if(typeof cloudReady!=="undefined"&&cloudReady){clearInterval(iv);mpCheck(true);}
+  if(typeof cloudReady!=="undefined"&&cloudReady){
+    clearInterval(iv);mpCheck(true);
+    const cs=S();if(cs&&cs.pub&&!touched){mode="refine";renderTabs();renderPanel();}
+  }
   else if(++n0>120)clearInterval(iv);
 },700);
 })();
