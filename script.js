@@ -1815,3 +1815,246 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-go]");if(!
 renderTabs();renderPanel();renderProj();
 }catch(err){console.error(err);alert("V7: "+err.message);}
 })();
+
+
+/* =========================================================================
+   AUTH REVAMP · slug check + email split + confirm pw + eye + forgot
+   Pega al final de script.js
+   ========================================================================= */
+(function(){
+if(typeof authAction === "undefined"){ console.error("Auth revamp: base no lista"); return; }
+
+let authMode = "login";
+let authBusy = false;
+const slugCache = {};
+
+const EYE_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+function byId(id){ return document.getElementById(id); }
+function getLocal(){ return (byId("emailLocal")?.value || "").trim().toLowerCase(); }
+function getDomain(){ return byId("emailDomain")?.value || "gmail.com"; }
+function composeEmail(){ const l = getLocal(); return l ? l + "@" + getDomain() : ""; }
+
+function serverSlug(t){
+  return (t || "").toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")
+    .slice(0,42).replace(/-+$/g,"") || "";
+}
+
+/* --- Modo --- */
+function setAuthMode(mode){
+  authMode = mode;
+  byId("bLogin")?.classList.toggle("on", mode === "login");
+  byId("bSignup")?.classList.toggle("on", mode === "signup");
+  document.querySelectorAll("#authGate .signup-only").forEach(el=>{
+    el.style.display = mode === "signup" ? "" : "none";
+  });
+  const sub = byId("bSubmit");
+  if(sub){ sub.textContent = mode === "signup" ? "Crear cuenta" : "Iniciar sesión"; sub.disabled = false; }
+  const fp = byId("bForgot");
+  if(fp) fp.style.display = mode === "login" ? "" : "none";
+  if(mode === "login"){
+    const st = byId("slugStatus");
+    if(st){ st.textContent = ""; st.className = "slug-status"; }
+  }
+  setTimeout(()=>{
+    if(mode === "signup") byId("storeName")?.focus();
+    else byId("emailLocal")?.focus();
+  }, 50);
+}
+
+/* --- Disponibilidad del slug --- */
+async function checkSlugAvailability(slug){
+  if(!slug || slug.length < 2) return "idle";
+  if(slug in slugCache) return slugCache[slug];
+  if(typeof supabaseClient === "undefined" || !supabaseClient) return "idle";
+  try{
+    const { data, error } = await supabaseClient.rpc("wb_check_slug", { p_slug: slug });
+if(error){ slugCache[slug] = "unknown"; return "unknown"; }
+const r = data ? "available" : "taken";
+    slugCache[slug] = r;
+    return r;
+  }catch(e){
+    slugCache[slug] = "unknown";
+    return "unknown";
+  }
+}
+
+let slugTimer = null;
+function scheduleSlugCheck(){ clearTimeout(slugTimer); slugTimer = setTimeout(updateSlugStatus, 420); }
+
+async function updateSlugStatus(){
+  const status = byId("slugStatus");
+  const submitBtn = byId("bSubmit");
+  const raw = byId("storeName")?.value.trim() || "";
+  if(!status) return;
+  if(!raw || raw.length < 2){
+    status.textContent = "";
+    status.className = "slug-status";
+    if(submitBtn) submitBtn.disabled = false;
+    return;
+  }
+  const slug = serverSlug(raw);
+  if(!slug){
+    status.textContent = "Usá solo letras, números y guiones";
+    status.className = "slug-status err";
+    if(submitBtn) submitBtn.disabled = true;
+    return;
+  }
+  status.textContent = "Verificando…";
+  status.className = "slug-status checking";
+  const r = await checkSlugAvailability(slug);
+  if(serverSlug(byId("storeName")?.value.trim() || "") !== slug) return;
+  if(r === "taken"){
+    status.textContent = `"${slug}" ya está en uso`;
+    status.className = "slug-status err";
+    if(submitBtn) submitBtn.disabled = true;
+  } else if(r === "available"){
+    status.textContent = `${slug}.tiendaonline.store está libre ✓`;
+    status.className = "slug-status ok";
+    if(submitBtn) submitBtn.disabled = false;
+  } else {
+    status.textContent = "";
+    status.className = "slug-status";
+    if(submitBtn) submitBtn.disabled = false;
+  }
+}
+
+/* --- Eye toggles --- */
+function bindEye(btnId, inputId){
+  const btn = byId(btnId), inp = byId(inputId);
+  if(!btn || !inp) return;
+  btn.innerHTML = EYE_ON;
+  btn.onclick = ()=>{
+    const show = inp.type === "password";
+    inp.type = show ? "text" : "password";
+    btn.innerHTML = show ? EYE_OFF : EYE_ON;
+    btn.setAttribute("aria-label", show ? "Ocultar contraseña" : "Mostrar contraseña");
+  };
+}
+
+/* --- Recuperar contraseña --- */
+async function forgotPassword(){
+  const email = composeEmail();
+  if(!email){ setAuthMessage("Ingresá tu email primero.", true); return; }
+  if(!supabaseClient){ setAuthMessage("Esperando conexión con el servidor…", true); return; }
+  try{
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname
+    });
+    if(error) throw error;
+    setAuthMessage("Te enviamos un link a " + email + ". Revisá tu bandeja (y spam).");
+  }catch(e){
+    setAuthMessage("No se pudo enviar el email: " + (e.message || e), true);
+  }
+}
+
+/* --- Override authAction --- */
+authAction = async function(){
+  if(authBusy) return;
+  const email = composeEmail();
+  const password = byId("authPassword")?.value || "";
+
+  if(!email){ setAuthMessage("Completá tu email.", true); byId("emailLocal")?.focus(); return; }
+  if(password.length < 6){ setAuthMessage("La contraseña debe tener al menos 6 caracteres.", true); byId("authPassword")?.focus(); return; }
+
+  let pendingStoreName = "";
+
+  if(authMode === "signup"){
+    const raw = byId("storeName")?.value.trim() || "";
+    if(raw.length < 2){ setAuthMessage("Poné un nombre para tu tienda (mínimo 2 letras).", true); byId("storeName")?.focus(); return; }
+    const slug = serverSlug(raw);
+    if(!slug){ setAuthMessage("Ese nombre no es válido. Usá letras y números.", true); return; }
+    const avail = await checkSlugAvailability(slug);
+    if(avail === "taken"){ setAuthMessage(`El nombre "${slug}" ya está en uso. Probá otro.`, true); return; }
+    const password2 = byId("authPassword2")?.value || "";
+    if(password !== password2){ setAuthMessage("Las contraseñas no coinciden.", true); byId("authPassword2")?.focus(); return; }
+    pendingStoreName = raw;
+  }
+
+  authBusy = true;
+  setAuthMessage(authMode === "signup" ? "Creando tu cuenta…" : "Iniciando sesión…");
+
+  try{
+    if(pendingStoreName){
+      try{ const cur = S(); if(cur) cur.name = pendingStoreName; }catch(e){}
+      try{ sessionStorage.setItem("__pending_store_name", pendingStoreName); }catch(e){}
+    }
+
+    const result = authMode === "signup"
+      ? await supabaseClient.auth.signUp({ email, password })
+      : await supabaseClient.auth.signInWithPassword({ email, password });
+
+    if(result.error){ setAuthMessage(result.error.message, true); return; }
+    if(authMode === "signup" && !result.data.session){
+      setAuthMessage("¡Cuenta creada! Revisá tu email para confirmar, después iniciá sesión.");
+      return;
+    }
+    if(result.data.session) await finishCloudLogin(result.data.session);
+  }catch(e){
+    setAuthMessage("Error: " + (e.message || e), true);
+  }finally{
+    authBusy = false;
+  }
+};
+
+/* --- Monkey-patch loadOrCreateCloudStore para usar el nombre pendiente --- */
+if(typeof loadOrCreateCloudStore === "function"){
+  const _origLoad = loadOrCreateCloudStore;
+  loadOrCreateCloudStore = async function(user){
+    try{
+      const pending = sessionStorage.getItem("__pending_store_name");
+      if(pending){
+        const cur = S(); if(cur) cur.name = pending;
+        sessionStorage.removeItem("__pending_store_name");
+      }
+    }catch(e){}
+    return _origLoad(user);
+  };
+}
+
+/* --- Bind UI --- */
+function bindAuthUI(){
+  const bLogin = byId("bLogin");
+  const bSignup = byId("bSignup");
+  const bSubmit = byId("bSubmit");
+  const bForgot = byId("bForgot");
+  const storeName = byId("storeName");
+
+  if(bLogin) bLogin.onclick = ()=> setAuthMode("login");
+  if(bSignup) bSignup.onclick = ()=> setAuthMode("signup");
+  if(bSubmit) bSubmit.onclick = ()=> authAction();
+  if(bForgot) bForgot.onclick = ()=> forgotPassword();
+
+  if(storeName){
+    storeName.addEventListener("input", scheduleSlugCheck);
+    storeName.addEventListener("blur", updateSlugStatus);
+  }
+
+  bindEye("togglePw", "authPassword");
+  bindEye("togglePw2", "authPassword2");
+
+  const gate = byId("authGate");
+  if(gate){
+    gate.addEventListener("keydown", (e)=>{
+      if(e.key !== "Enter") return;
+      const t = e.target;
+      if(!t || (t.tagName !== "INPUT" && t.tagName !== "SELECT")) return;
+      if(t.id === "storeName") return;
+      e.preventDefault();
+      authAction();
+    });
+  }
+
+  setAuthMode("login");
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", bindAuthUI);
+} else {
+  bindAuthUI();
+}
+
+})();
