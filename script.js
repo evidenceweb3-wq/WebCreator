@@ -1976,7 +1976,15 @@ authAction = async function(){
     const slug = serverSlug(raw);
     if(!slug){ setAuthMessage("Ese nombre no es válido. Usá letras y números.", true); return; }
     const avail = await checkSlugAvailability(slug);
-    if(avail === "taken"){ setAuthMessage(`El nombre "${slug}" ya está en uso. Probá otro.`, true); return; }
+    if(avail === "taken"){ setAuthMessage(`El nombre "${slug}.tiendaonline.site" ya está en uso. Probá otro.`, true); return; }
+
+    const emailAvail = await checkEmailAvailability(email);
+    if(emailAvail === "taken"){
+      setAuthMessage("Ese email ya tiene una cuenta. Probá iniciar sesión o usá otro.", true);
+      byId("emailLocal")?.focus();
+      return;
+    }
+
     const password2 = byId("authPassword2")?.value || "";
     if(password !== password2){ setAuthMessage("Las contraseñas no coinciden.", true); byId("authPassword2")?.focus(); return; }
     pendingStoreName = raw;
@@ -1995,24 +2003,50 @@ authAction = async function(){
       ? await supabaseClient.auth.signUp({ email, password })
       : await supabaseClient.auth.signInWithPassword({ email, password });
 
+    /* ===== DEBUG ===== */
+    console.log("=== AUTH RESULT ===", JSON.stringify(result, null, 2));
+    console.log("error?", result.error);
+    console.log("user?", result.data?.user);
+    console.log("session?", result.data?.session);
+    console.log("identities?", result.data?.user?.identities);
+    /* ================= */
+
+    // Caso 1: Supabase devolvió error explícito
     if(result.error){
-  const msg = result.error.message || "";
-  if(/already registered|already exists|user already|duplicate|ya está registrado/i.test(msg)){
-    setAuthMessage("Ese email ya tiene una cuenta. Iniciá sesión o recuperá tu contraseña.", true);
-    if(authMode === "signup"){
-      setTimeout(()=>setAuthMode("login"), 1200);
-    }
-  } else {
-    setAuthMessage(msg, true);
-  }
-  return;
-}
-    if(authMode === "signup" && !result.data.session){
-      setAuthMessage("¡Cuenta creada! Revisá tu email para confirmar, después iniciá sesión.");
+      const msg = result.error.message || "";
+      if(/already registered|already exists|user already|duplicate/i.test(msg)){
+        setAuthMessage("Ese email ya tiene una cuenta. Iniciá sesión o recuperá tu contraseña.", true);
+        if(authMode === "signup") setTimeout(()=>setAuthMode("login"), 1500);
+      } else {
+        setAuthMessage(msg, true);
+      }
       return;
     }
+
+    // Caso 2: Signup con email YA existente (Supabase lo "disimula")
+    // → devuelve user con identities: [] y sin session
+    if(authMode === "signup"){
+      const u = result.data?.user;
+      const s = result.data?.session;
+      const identities = Array.isArray(u?.identities) ? u.identities : null;
+
+      // Si NO hay session, es signup. Dos opciones:
+      // a) Email nuevo → identities.length >= 1 → cuenta creada
+      // b) Email ya registrado → identities === [] → ya existía
+      if(!s){
+        if(identities && identities.length === 0){
+          setAuthMessage("Ese email ya tiene una cuenta. Iniciá sesión o recuperá tu contraseña.", true);
+          setTimeout(()=>setAuthMode("login"), 1500);
+          return;
+        }
+        setAuthMessage("¡Cuenta creada! Revisá tu email para confirmar, después iniciá sesión.");
+        return;
+      }
+    }
+
     if(result.data.session) await finishCloudLogin(result.data.session);
   }catch(e){
+    console.error("authAction error:", e);
     setAuthMessage("Error: " + (e.message || e), true);
   }finally{
     authBusy = false;
