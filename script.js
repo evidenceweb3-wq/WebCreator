@@ -1995,7 +1995,18 @@ authAction = async function(){
       ? await supabaseClient.auth.signUp({ email, password })
       : await supabaseClient.auth.signInWithPassword({ email, password });
 
-    if(result.error){ setAuthMessage(result.error.message, true); return; }
+    if(result.error){
+  const msg = result.error.message || "";
+  if(/already registered|already exists|user already|duplicate|ya está registrado/i.test(msg)){
+    setAuthMessage("Ese email ya tiene una cuenta. Iniciá sesión o recuperá tu contraseña.", true);
+    if(authMode === "signup"){
+      setTimeout(()=>setAuthMode("login"), 1200);
+    }
+  } else {
+    setAuthMessage(msg, true);
+  }
+  return;
+}
     if(authMode === "signup" && !result.data.session){
       setAuthMessage("¡Cuenta creada! Revisá tu email para confirmar, después iniciá sesión.");
       return;
