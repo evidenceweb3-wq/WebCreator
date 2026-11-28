@@ -1760,12 +1760,7 @@ input[type=range],.tog input{accent-color:#3d8bff!important}
 @media(prefers-reduced-motion:reduce){.flm{animation:none}}`;
 document.head.appendChild(st);
 
-const lg=document.querySelector(".logo");if(lg)lg.innerHTML=FLAME+"WebHub";
-
-const w=document.createElement("div");w.id="mnuWrap";
-w.innerHTML='<button class="b ghost" id="bMore" title="Más opciones" style="font-size:18px!important;padding:6px 12px!important">⋯</button><div id="mnu"></div>';
-const rd=document.getElementById("bRedo");rd.after(w);
-const mnu=w.querySelector("#mnu");
+const mnu=document.getElementById("mnu");
 [["bDup","Duplicar proyecto"],["bDel","Borrar proyecto"],"-",["bExport","Descargar web (.html)"],["bTab","Abrir en pestaña nueva"],"-",["bJson","Guardar proyecto (.json)"],["bOpen","Abrir proyecto (.json)"],["bBackup","Backup de todo"]].forEach(x=>{
   if(x==="-"){mnu.appendChild(document.createElement("hr"));return;}
   const b=document.getElementById(x[0]);if(!b)return;b.textContent=x[1];b.classList.remove("pri","ghost");mnu.appendChild(b);});
